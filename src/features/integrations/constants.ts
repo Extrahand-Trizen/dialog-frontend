@@ -1,6 +1,6 @@
-export const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? 'http://localhost:4010/api/v1';
+import { getApiBaseUrl } from '@/config/runtime-config';
 
+export const API_BASE_URL = getApiBaseUrl();
 export const SEND_EXAMPLE = `{
   "template": "booking_confirmation",
   "language": "en",

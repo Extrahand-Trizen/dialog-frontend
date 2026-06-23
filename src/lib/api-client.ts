@@ -1,9 +1,9 @@
 import axios, { type AxiosError } from 'axios';
+import { getApiBaseUrl } from '@/config/runtime-config';
 import { isDevMockAuthEnabled } from '@/config/dev-mock-auth';
 import type { ApiErrorBody, ApiSuccessBody } from '@/types/api';
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? 'http://localhost:4010/api/v1';
+const API_BASE_URL = getApiBaseUrl();
 
 export const AUTH_TOKEN_KEY = 'trizendialog_auth_token';
 

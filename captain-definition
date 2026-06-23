@@ -1,42 +1,4 @@
 {
   "schemaVersion": 2,
-  "dockerfilePath": "./Dockerfile",
-  "buildArguments": {
-    "CACHE_BUST": "latest",
-    "VITE_API_URL": "https://trizendialog-backend.apps.extrahand.in/api/v1",
-    "VITE_DEV_MOCK_AUTH": "false"
-  },
-  "expose": {
-    "web": {
-      "containerPort": 80,
-      "httpPort": 80,
-      "httpsPort": 443
-    }
-  },
-  "healthcheck": {
-    "path": "/",
-    "port": 80,
-    "interval": 30,
-    "timeout": 10,
-    "retries": 3,
-    "startPeriod": 15
-  },
-  "appName": "trizendialog-frontend",
-  "hasPersistentData": false,
-  "description": "TrizenDialog — WhatsApp notification operations console",
-  "instanceCount": 1,
-  "tags": ["react", "vite", "typescript", "nginx", "trizen", "whatsapp"],
-  "envVars": {},
-  "restart": {
-    "policy": "unless-stopped",
-    "maximumRetryCount": 10
-  },
-  "resources": {
-    "memory": "256Mi",
-    "cpu": "0.25"
-  },
-  "networking": {
-    "publishAllPorts": false,
-    "enableTcpProxy": false
-  }
+  "dockerfilePath": "./Dockerfile"
 }
