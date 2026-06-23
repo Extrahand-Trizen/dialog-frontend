@@ -22,6 +22,7 @@ import {
   User,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { APP_NAME } from '@/constants/branding';
 import { useAuth } from '@/features/auth/context/AuthProvider';
 import { canViewAdminNav } from '@/lib/permissions';
 
@@ -86,14 +87,14 @@ export function AppSidebar() {
       <SidebarHeader className="border-b">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild tooltip="TrizenDialog">
+            <SidebarMenuButton size="lg" asChild tooltip={APP_NAME}>
               <Link to="/overview">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <MessageSquare className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">TrizenDialog</span>
-                  <span className="truncate text-xs text-muted-foreground">WhatsApp Ops</span>
+                  <span className="truncate font-semibold">{APP_NAME}</span>
+                  <span className="truncate text-xs text-muted-foreground">Console</span>
                 </div>
               </Link>
             </SidebarMenuButton>

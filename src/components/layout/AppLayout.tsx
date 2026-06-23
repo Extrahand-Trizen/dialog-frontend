@@ -2,6 +2,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { DevMockAuthBanner } from '@/components/layout/DevMockAuthBanner';
 import { TopNav } from '@/components/layout/TopNav';
+import { APP_NAME } from '@/constants/branding';
 import { useLocation } from 'react-router-dom';
 
 const PAGE_TITLES: Record<string, { title: string; description?: string }> = {
@@ -36,7 +37,7 @@ const PAGE_TITLES: Record<string, { title: string; description?: string }> = {
   },
   '/api-keys': {
     title: 'API Keys',
-    description: 'Create and revoke keys for sending messages via the TrizenDialog API.',
+    description: 'Create and revoke keys for sending messages via the platform API.',
   },
 };
 
@@ -50,7 +51,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     PAGE_TITLES[pathname] ??
     (/^\/templates\/[^/]+\/edit$/.test(pathname)
       ? PAGE_TITLES['/templates/:templateId/edit']
-      : { title: 'TrizenDialog' });
+      : { title: APP_NAME });
 
   return (
     <SidebarProvider defaultOpen>

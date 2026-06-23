@@ -71,7 +71,7 @@ export const SEND_FIELD_ROWS = [
   { field: 'to', required: true, description: 'Recipient phone with country code, digits only (e.g. 919876543210).' },
   { field: 'variables', required: false, description: 'Named object or ordered array matching template slots.' },
   { field: 'idempotencyKey', required: true, description: 'Your stable reference (MyOperator myop_ref_id). Prevents duplicate sends on retry.' },
-  { field: 'phoneNumberId', required: false, description: 'TrizenDialog phone UUID when org has multiple numbers.' },
+  { field: 'phoneNumberId', required: false, description: 'Platform phone UUID when org has multiple numbers.' },
 ] as const;
 
 export const SEND_ERROR_ROWS = [

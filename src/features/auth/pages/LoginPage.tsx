@@ -16,6 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/features/auth/context/AuthProvider';
 import { loginFormSchema, type LoginFormValues } from '@/features/auth/schemas';
+import { APP_NAME, APP_TAGLINE } from '@/constants/branding';
 import { getApiErrorMessage } from '@/lib/api-error';
 
 export function LoginPage() {
@@ -56,8 +57,8 @@ export function LoginPage() {
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
             <MessageSquare className="h-6 w-6 text-primary-foreground" />
           </div>
-          <CardTitle>Sign in to TrizenDialog</CardTitle>
-          <CardDescription>WhatsApp notification operations console</CardDescription>
+          <CardTitle>Sign in to {APP_NAME}</CardTitle>
+          <CardDescription>{APP_TAGLINE}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -102,6 +103,10 @@ export function LoginPage() {
             </form>
           </Form>
           <p className="mt-6 text-center text-xs text-muted-foreground">
+            <Link to="/" className="underline-offset-4 hover:underline">
+              Home
+            </Link>
+            {' · '}
             <Link to="/privacy" className="underline-offset-4 hover:underline">
               Privacy
             </Link>

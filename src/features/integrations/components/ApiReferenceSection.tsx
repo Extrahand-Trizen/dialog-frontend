@@ -182,7 +182,7 @@ export function ResponseFormatCard() {
       <CardHeader>
         <CardTitle>Response format</CardTitle>
         <CardDescription>
-          TrizenDialog uses a consistent envelope — not MyOperator&apos;s status/code wrapper.
+          The platform uses a consistent JSON envelope — not MyOperator&apos;s status/code wrapper.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3 text-sm text-muted-foreground">

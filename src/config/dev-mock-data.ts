@@ -518,7 +518,7 @@ export function getDevMockMessageDetail(messageId: string): MessageDetailDto | u
     phoneNumber: {
       id: DEV_MOCK_PHONE_PRIMARY_ID,
       displayNumber: '+91 98765 00000',
-      verifiedName: 'TrizenDialog Demo',
+      verifiedName: 'WhatsApp Ops Demo',
     },
   };
 }
@@ -810,7 +810,7 @@ export const DEV_MOCK_WHATSAPP_ACCOUNTS: WhatsAppAccountDto[] = [
     id: DEV_MOCK_WHATSAPP_ACCOUNT_ID,
     organizationId: ORG_ID,
     metaWabaId: '123456789012345',
-    name: 'TrizenDialog Demo WABA',
+    name: 'WhatsApp Ops Demo WABA',
     status: 'ACTIVE',
     lastSyncedAt: ts('2026-06-19T07:00:00.000Z'),
     lastError: null,
@@ -826,7 +826,7 @@ export const DEV_MOCK_PHONE_NUMBERS: PhoneNumberDto[] = [
     whatsAppAccountId: DEV_MOCK_WHATSAPP_ACCOUNT_ID,
     metaPhoneNumberId: 'meta-phone-001',
     displayNumber: '+91 98765 00000',
-    verifiedName: 'TrizenDialog Demo',
+    verifiedName: 'WhatsApp Ops Demo',
     qualityRating: 'GREEN',
     messagingTier: 'TIER_10K',
     status: 'ACTIVE',
@@ -840,7 +840,7 @@ export const DEV_MOCK_PHONE_NUMBERS: PhoneNumberDto[] = [
     whatsAppAccountId: DEV_MOCK_WHATSAPP_ACCOUNT_ID,
     metaPhoneNumberId: 'meta-phone-002',
     displayNumber: '+91 87654 00000',
-    verifiedName: 'TrizenDialog Support',
+    verifiedName: 'WhatsApp Ops Support',
     qualityRating: 'YELLOW',
     messagingTier: 'TIER_1K',
     status: 'ACTIVE',

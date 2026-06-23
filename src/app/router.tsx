@@ -1,11 +1,14 @@
 import { lazy, Suspense } from 'react';
-import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { RouteErrorBoundary } from '@/components/shared/RouteErrorBoundary';
 import { ProtectedRoute } from '@/features/auth/guards/ProtectedRoute';
 import { AdminRoute } from '@/features/auth/guards/AdminRoute';
 
+const LandingPage = lazy(() =>
+  import('@/features/landing/LandingPage').then((m) => ({ default: m.LandingPage })),
+);
 const LoginPage = lazy(() =>
   import('@/features/auth/pages/LoginPage').then((m) => ({ default: m.LoginPage })),
 );
@@ -80,7 +83,7 @@ function AuthenticatedLayout() {
 }
 
 export const router = createBrowserRouter([
-  { path: '/', element: <Navigate to="/overview" replace /> },
+  { path: '/', element: withSuspense(<LandingPage />) },
   { path: '/login', element: withSuspense(<LoginPage />) },
   { path: '/privacy', element: withSuspense(<PrivacyPage />) },
   { path: '/terms', element: withSuspense(<TermsPage />) },

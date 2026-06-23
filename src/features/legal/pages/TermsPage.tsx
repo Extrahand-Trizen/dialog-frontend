@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { APP_NAME } from '@/constants/branding';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -10,9 +11,9 @@ export function TermsPage() {
           <CardTitle>Terms of Service</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-sm text-muted-foreground">
-          <p>TrizenDialog terms placeholder. Replace with legal copy before production.</p>
+          <p>{APP_NAME} terms placeholder. Replace with legal copy before production.</p>
           <Button asChild variant="outline">
-            <Link to="/login">Back to login</Link>
+            <Link to="/">Back to home</Link>
           </Button>
         </CardContent>
       </Card>

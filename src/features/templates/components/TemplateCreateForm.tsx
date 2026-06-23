@@ -404,7 +404,7 @@ export function TemplateCreateForm({
                           <FormItem>
                             <FormLabel>Footer text</FormLabel>
                             <FormControl>
-                              <Input placeholder="Team TrizenDialog" {...field} />
+                              <Input placeholder="Support Team" {...field} />
                             </FormControl>
                             <FormDescription>{(field.value ?? '').length}/60</FormDescription>
                             <FormMessage />

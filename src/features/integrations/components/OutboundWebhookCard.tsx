@@ -76,7 +76,7 @@ export function OutboundWebhookCard() {
       <CardHeader>
         <CardTitle>Outbound webhooks</CardTitle>
         <CardDescription>
-          TrizenDialog POSTs delivery events to your backend (MyOperator WebHooks New shape).
+          The platform POSTs delivery events to your backend (MyOperator WebHooks New shape).
           Verify requests with the HMAC signature header.
         </CardDescription>
       </CardHeader>
@@ -93,7 +93,7 @@ export function OutboundWebhookCard() {
               <Label htmlFor="webhook-url">Webhook URL</Label>
               <Input
                 id="webhook-url"
-                placeholder="https://api.extrahand.com/webhooks/trizendialog"
+                placeholder="https://api.extrahand.com/webhooks/whatsapp-ops"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 disabled={!canManage || saveMutation.isPending}
@@ -161,8 +161,8 @@ export function OutboundWebhookCard() {
             {WEBHOOK_PAYLOAD_EXAMPLE}
           </pre>
           <p className="mt-2 text-sm text-muted-foreground">
-            Header <code className="text-foreground">X-TrizenDialog-Signature</code>: HMAC-SHA256 of
-            the raw JSON body using your signing secret (<code className="text-foreground">sha256=…</code>).
+            Verify the webhook HMAC signature header on each POST (
+            <code className="text-foreground">sha256=…</code>).
           </p>
         </div>
       </CardContent>

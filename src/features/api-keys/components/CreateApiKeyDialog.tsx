@@ -63,7 +63,7 @@ export function CreateApiKeyDialog({ open, onOpenChange, onCreated }: CreateApiK
         <DialogHeader>
           <DialogTitle>Create API key</DialogTitle>
           <DialogDescription>
-            API keys authenticate integrators sending events to TrizenDialog.
+            API keys authenticate integrators sending events to the platform.
           </DialogDescription>
         </DialogHeader>
 

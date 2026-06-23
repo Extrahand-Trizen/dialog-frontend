@@ -1,6 +1,6 @@
 {
   "name": "trizendialog-frontend",
-  "description": "TrizenDialog WhatsApp notification operations console",
+  "description": "WhatsApp notification operations console",
   "private": true,
   "version": "0.0.0",
   "type": "module",
