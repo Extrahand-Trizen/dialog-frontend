@@ -1,0 +1,112 @@
+---
+description: TrizenDialog frontend UI — components, pages, tables, forms, accessibility
+globs: trizendialog-frontend/**
+alwaysApply: false
+---
+
+# TrizenDialog Frontend UI
+
+**Scope:** `trizendialog-frontend/` only.
+
+Loading, error, and empty states: see `frontend-resilience.mdc`.
+
+URL state and debounce: see `frontend-query.mdc`.
+
+---
+
+## Pages
+
+- Maximum **200 lines**
+- Pages **own list/detail `useQuery`** or call a feature controller hook
+- Pass data and query state to presentational children
+- No API calls in pages — only hook/query calls
+
+```tsx
+// ✅
+function TemplatesPage() {
+  const templatesQuery = useQuery({ ... });
+  return <TemplatesTable ... />;
+}
+
+// ❌ TemplateTable calling useQuery internally
+```
+
+---
+
+## Components
+
+- One responsibility per component
+- Extract: Table, Filters, Form, Drawer, Dialog
+- Feature-specific components live in `features/{domain}/components/`
+- Move to `components/shared/` when **2+ features** consume them
+
+---
+
+## Forms
+
+Forms with **3+ fields** must use React Hook Form + Zod.
+
+Schemas align with `trizendialog-backend` `*.schemas.ts`.
+
+---
+
+## Tables
+
+- **TanStack Table** for sortable/filterable/paginated lists
+- **Server-side pagination** — wire `page`/`limit` to query keys and URL
+- Never fetch all records and paginate client-side
+
+---
+
+## Routing
+
+- Feature routes **lazy-loaded** via `React.lazy`
+- Route-level `Suspense` with skeleton fallback
+- Route-level `RouteErrorBoundary`
+- Flat nav — admin items gated by permissions, no `/admin/*` prefix
+
+---
+
+## Visual design
+
+- shadcn/ui + Tailwind semantic tokens
+- **Forbidden:** arbitrary values (`w-[342px]`, `text-[#4A5568]`, `mt-[17px]`) unless justified in comment
+- Use spacing scale, `text-muted-foreground`, `bg-muted`, etc.
+- **Tables first** — no charts unless trends cannot be read from tables
+
+---
+
+## Loading UX
+
+- Keep layout/sidebar visible while content loads
+- Filter changes: inline skeleton in table body only
+- Initial auth check: full-screen loader acceptable once
+
+---
+
+## Audit trail UI
+
+Entity detail pages prefer timelines and labeled fields over raw JSON dumps.
+
+Show `correlationId` and `idempotencyKey` for debugging. Raw JSON only in collapsible developer sections.
+
+---
+
+## Accessibility
+
+- Form fields need `<Label>` or `aria-label`
+- Icon-only buttons need `aria-label`
+- Do not rely on color alone for status (use text badges)
+- Verify keyboard navigation for custom interactive elements outside shadcn
+
+---
+
+## Responsiveness
+
+Desktop-first ops dashboard. Must remain usable on tablet. Do not optimize for mobile-first workflows.
+
+---
+
+## File uploads (future)
+
+Show progress, cancellation, and failure. Non-blocking UI.

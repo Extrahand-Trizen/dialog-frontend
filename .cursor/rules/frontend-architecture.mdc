@@ -1,0 +1,140 @@
+---
+description: TrizenDialog frontend architecture — state, ownership, module boundaries
+globs: trizendialog-frontend/**
+alwaysApply: false
+---
+
+# TrizenDialog Frontend Architecture
+
+**Scope:** `trizendialog-frontend/` only.
+
+## Rule zero
+
+If data comes from the backend, **TanStack Query owns it**.
+
+Do not copy it into Zustand, Context, or `useState`.
+
+See also: `frontend-query.mdc`, `frontend-resilience.mdc`, `frontend-standards.mdc`.
+
+---
+
+## State ownership
+
+| Category | Examples | Owner |
+|----------|----------|-------|
+| Server state | Templates, messages, events, rules, dashboard | TanStack Query only |
+| Session | Token, login/logout actions | Auth Context |
+| User profile | `/auth/me` | TanStack Query (`authKeys.me`) cached in AuthProvider |
+| Local UI | Drawer open, row selected | `useState` in component |
+| Cross-page UI | Sidebar collapsed, theme | Zustand (rare) |
+
+### Forbidden libraries
+
+Redux, MobX, Recoil, Jotai, SWR, Formik, Yup.
+
+### Zustand — allowed only for
+
+`theme`, `sidebarCollapsed`, ephemeral cross-route UI.
+
+### Zustand — forbidden for
+
+Anything returned by an API endpoint.
+
+---
+
+## Data flow
+
+```text
+Page → feature hook → feature api/ → lib/api-client.ts
+```
+
+Never:
+
+- `axios` in components
+- `useQuery` in presentational components (tables, drawers, form fields)
+- `response.data.data` outside `features/*/api/`
+
+Hooks return unwrapped types (`Template[]`, `AuthUser`), not `AppResponse<T>`.
+
+Query configuration: see `frontend-query.mdc`.
+
+---
+
+## Feature module layout
+
+```text
+features/{domain}/
+  api/           # Pure fetch — envelope unwrap here
+  hooks/         # useMutation wrappers; optional page controller hooks
+  components/    # Feature-local UI
+  pages/         # Route entry — may own list useQuery
+  queryKeys.ts
+  types.ts
+  schemas.ts     # Zod — align with backend *.schemas.ts
+```
+
+`src/hooks/` is for cross-cutting utilities only (`use-mobile`, `use-debounced-value`, `use-table-params`, `use-whatsapp-accounts`).
+
+---
+
+## Import direction
+
+```text
+Allowed:
+  features/* → lib/, components/shared/, components/layout/, hooks/
+  features/* → features/auth (guards, types, AuthProvider)
+
+Forbidden:
+  features/messages → features/templates/api/*
+  features/templates → features/whatsapp/queryKeys
+```
+
+When two features share data, expose a cross-cutting hook in `src/hooks/` or a documented public API — not deep feature internals.
+
+---
+
+## Component ownership
+
+One owner per component. When a second feature needs it, move to `components/shared/`.
+
+---
+
+## Feature flags
+
+Incomplete or experimental features use `src/config/features.ts`.
+
+Do not hide half-finished features through navigation alone — gate routes and nav with the same config.
+
+---
+
+## Permissions
+
+Authorization logic is centralized in `src/lib/permissions.ts`.
+
+```ts
+// ❌
+if (user.role === 'ADMIN')
+
+// ✅
+if (canSyncTemplates(user))
+```
+
+Route guards (`AdminRoute`) wrap the same permission functions.
+
+---
+
+## API envelope
+
+Backend returns `{ success, message, data, meta? }`.
+
+Unwrap in `features/*/api/` using `lib/api-client.ts` helpers.
+
+Errors: `getApiErrorMessage()` from `lib/api-error.ts`.
+
+---
+
+## Auth
+
+- Token in `localStorage` via `AUTH_TOKEN_KEY`
+- `/auth/me` cached with `authKeys.me` — do not maintain parallel user state in Context
+- Roles: `ADMIN` | `VIEWER` today — extend via `lib/permissions.ts`

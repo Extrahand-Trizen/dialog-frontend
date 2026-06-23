@@ -1,0 +1,99 @@
+---
+description: TrizenDialog frontend — formatting, React hygiene, performance, security
+globs: trizendialog-frontend/**
+alwaysApply: false
+---
+
+# TrizenDialog Frontend Standards
+
+**Scope:** `trizendialog-frontend/` only.
+
+## Don't invent patterns
+
+Before creating a new pattern, utility, hook, component, or error-handling style:
+
+1. Search the codebase
+2. Reuse the existing pattern
+3. Consistency beats local optimization
+
+Reference implementations are listed in `AGENTS.md`.
+
+## Formatting
+
+All formatting lives in `src/lib/format/`. Import from `@/lib/format`.
+
+```text
+formatDate, formatDateTime, formatPhone, formatPercent, formatDuration, formatCurrency
+```
+
+### Date and timezone
+
+- Store and transport timestamps as UTC ISO strings
+- Formatting utilities convert to the user's local timezone
+- Forbidden in components: `new Date(x).toLocaleString()`
+
+## Errors and toasts
+
+```ts
+// ❌
+toast.error(error.message);
+
+// ✅
+toastMutationError(error);
+getApiErrorMessage(error);
+```
+
+Do not expose raw backend payloads to users.
+
+## Memoization
+
+Do not add `useMemo` / `useCallback` by default.
+
+Use only when: expensive computation, stable refs for memoized children, or measured benefit.
+
+## JS performance anti-patterns
+
+Avoid inside render hot paths:
+
+```text
+items.filter().map().filter() chains
+array.find() inside loops — use Map/Set
+new Date() / new RegExp() in large loops
+JSON.parse(JSON.stringify()) for cloning
+Promise.all on unbounded request lists — batch instead
+```
+
+## Virtualization
+
+When visible rows exceed ~100, consider virtualization before custom optimizations. Not required for server-paginated tables at default page size.
+
+## Bundle size
+
+Prefer targeted imports (`date-fns/format`). Avoid entire `lodash`, `moment.js`.
+
+## Security
+
+- Never store JWT in Zustand — AuthProvider + `localStorage` token key only
+- Never log tokens, API keys, or phone numbers in `console` outside `__DEV__`
+
+## File uploads (future)
+
+Large uploads must show progress, cancellation, and failure state. Do not block the UI.
+
+## Review checklist
+
+```text
+✓ Query owns server state — no query → useState duplication
+✓ No useEffect data mirroring
+✓ No axios in components
+✓ Feature owns API in features/*/api/
+✓ Query keys centralized
+✓ URL owns filters
+✓ Skeleton + Empty + Error + Success per widget
+✓ Page survives single API failure
+✓ Formatting from lib/format/
+✓ Debounced API search
+✓ Permissions via lib/permissions.ts — not scattered role checks
+✓ No cross-feature deep imports
+✓ Page ≤ 200 lines
+```

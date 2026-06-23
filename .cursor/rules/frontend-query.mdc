@@ -1,0 +1,98 @@
+---
+description: TrizenDialog frontend — TanStack Query, caching, URL state, debounce
+globs: trizendialog-frontend/**
+alwaysApply: false
+---
+
+# TrizenDialog Frontend Query
+
+**Scope:** `trizendialog-frontend/` only.
+
+## Query client — single source of truth
+
+`src/app/queryClient.ts` owns global defaults.
+
+Do **not** redefine `retry`, `staleTime`, `gcTime`, or `refetchOnWindowFocus` in hooks unless there is a **comment explaining why**.
+
+```ts
+// ✅ Justified override — message delivery stats change frequently
+staleTime: 10_000
+
+// ❌ Copy-paste on every feature
+staleTime: 30_000
+```
+
+Recommended defaults (operations dashboard, not realtime terminal):
+
+```text
+staleTime: 60_000
+gcTime: 5 * 60_000
+retry: 1
+refetchOnWindowFocus: false
+refetchOnReconnect: true
+```
+
+## Query keys
+
+Each feature owns `queryKeys.ts`. Never hardcode `['templates']` inline.
+
+Paginated list keys must include `page`, `limit`, and active filters.
+
+## Mutations
+
+- Live in `features/{domain}/hooks/`, not pages
+- Type generics on every `useMutation`
+- Invalidate narrowly: `queryClient.invalidateQueries({ queryKey: templateKeys.all })`
+- Toasts via `toastMutationError` / `toastMutationSuccess` from `lib/mutation-toast.ts`
+
+## Forbidden
+
+```ts
+const { data } = useTemplates();
+const [templates, setTemplates] = useState(data);
+
+useEffect(() => { setTemplates(data); }, [data]);
+```
+
+Query data must not be copied into component state.
+
+## Search debounce
+
+API-backed search must be debounced (default **400ms**).
+
+Use `src/hooks/use-debounced-value.ts`. No ad-hoc `setTimeout` in components.
+
+## URL state
+
+Filters, sorting, pagination, and search belong in URL search params when possible:
+
+```text
+/messages?page=2&status=FAILED
+```
+
+Use `src/hooks/use-table-params.ts`. Do not store table filters in Zustand or Context.
+
+## Filter changes
+
+Use `placeholderData: (prev) => prev` on paginated list queries so filter changes do not flash empty full-screen loaders.
+
+## Polling
+
+Default: **no** `refetchInterval`.
+
+Polling requires a comment justifying near-real-time need (e.g. live message status). Forbidden on static config screens (templates, rules).
+
+## Cache size
+
+Paginated lists: rely on global `gcTime`.
+
+`useInfiniteQuery` / message history screens: set explicit `gcTime` and document max cached pages.
+
+## Blanket invalidation
+
+```ts
+// ❌
+queryClient.invalidateQueries();
+// ✅
+queryClient.invalidateQueries({ queryKey: templateKeys.all });
+```

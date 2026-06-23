@@ -1,0 +1,96 @@
+---
+description: TrizenDialog frontend — graceful degradation, error/empty states, boundaries
+globs: trizendialog-frontend/**
+alwaysApply: false
+---
+
+# TrizenDialog Frontend Resilience
+
+**Scope:** `trizendialog-frontend/` only.
+
+## Rule zero
+
+Pages must continue functioning when one API request fails.
+
+A failed widget must not crash or blank the page.
+
+Prefer graceful degradation over hard failure.
+
+```text
+Dashboard
+ ├ Messages Card ❌  → InlineError, rest of page works
+ ├ Events Card ✅
+ └ Activity Feed ✅
+```
+
+## Four states per data widget
+
+Every data widget must handle:
+
+```text
+Loading → Skeleton
+Error   → QueryErrorPanel or InlineError
+Empty   → EmptyState (actionable when possible)
+Success → Content
+```
+
+## Forbidden
+
+```tsx
+if (isError) {
+  return <ErrorPage />;
+}
+```
+
+on dashboard/list pages.
+
+## Forbidden — API failure as empty
+
+```text
+isError === true && data === undefined → "No templates found"
+```
+
+That is misinformation. Check `isError` before treating missing data as empty.
+
+## Required pattern
+
+```tsx
+if (isLoading) return <TableSkeleton />;
+
+if (isError) {
+  return (
+    <QueryErrorPanel
+      error={error}
+      onRetry={() => void refetch()}
+    />
+  );
+}
+
+if (!data?.items.length) {
+  return (
+    <EmptyState
+      title="No templates yet"
+      description="Sync templates from your connected WhatsApp account."
+      action={...}
+    />
+  );
+}
+
+return <TemplatesTable items={data.items} />;
+```
+
+Use shared components from `src/components/shared/`.
+
+## Progressive rendering
+
+Independent queries on one page must render independently. Do not block the whole page waiting for all queries.
+
+## Error boundaries
+
+Route-level `RouteErrorBoundary` is required. Unexpected render failures must not crash the entire application.
+
+## Observability
+
+`QueryErrorPanel` and mutation toasts use `getApiErrorMessage()`. When backend exposes `errorCode` or `correlationId`, surface them for support debugging.
+
+Entity detail views should show `correlationId` when present on the DTO.
