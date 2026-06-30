@@ -35,15 +35,11 @@ type HeaderMediaUploadProps = {
   previewUrl?: string;
 
   onUploaded: (result: {
-
     handle: string;
-
     format: HeaderMediaFormat;
-
     fileName: string;
-
+    mediaUrl: string;
     previewUrl?: string;
-
   }) => void;
 
   onClear: () => void;
@@ -154,6 +150,8 @@ export function HeaderMediaUpload({
 
           fileName: result.fileName,
 
+          mediaUrl: result.mediaUrl,
+
           previewUrl: localPreview,
 
         });
@@ -242,9 +240,9 @@ export function HeaderMediaUpload({
 
       <p className="text-xs text-muted-foreground">
 
-        {typeLabel} — max {maxLabel}. Uploaded to Meta via resumable upload; handle is used in
+        {typeLabel} — max {maxLabel}. Uploaded to Meta and MinIO; handle is used in template
 
-        template submission.
+        submission.
 
       </p>
 

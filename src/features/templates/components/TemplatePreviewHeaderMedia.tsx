@@ -1,30 +1,29 @@
 import { useState } from 'react';
 import { FileText, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getTemplatePreviewPlaceholderImage } from '@/features/templates/utils/previewPlaceholders';
 
 type TemplatePreviewHeaderMediaProps = {
   headerType: 'image' | 'video' | 'document';
+  /** MinIO URL (or local blob while drafting a new template). */
   mediaUrl?: string;
-  /** Stable seed when falling back to a dummy image (e.g. template id or card index). */
-  placeholderSeed?: string | number;
   variant?: 'mini' | 'full';
   className?: string;
 };
 
 const VARIANT_CLASS: Record<NonNullable<TemplatePreviewHeaderMediaProps['variant']>, string> = {
   mini: 'max-h-20 w-full object-cover',
-  full: 'max-h-36 w-full object-cover',
+  full: 'block h-auto w-full',
 };
 
 export function TemplatePreviewHeaderMedia({
   headerType,
   mediaUrl,
-  placeholderSeed = 0,
   variant = 'full',
   className,
 }: TemplatePreviewHeaderMediaProps) {
   const [imageFailed, setImageFailed] = useState(false);
+  const resolvedMediaUrl = mediaUrl?.trim();
+  const imageClass = cn(VARIANT_CLASS[variant], className);
 
   if (headerType === 'document') {
     return (
@@ -41,26 +40,23 @@ export function TemplatePreviewHeaderMedia({
     );
   }
 
-  const imageSrc = mediaUrl ?? getTemplatePreviewPlaceholderImage(placeholderSeed);
-  const imageClass = cn(VARIANT_CLASS[variant], className);
+  if (!resolvedMediaUrl || imageFailed) {
+    return null;
+  }
 
   if (headerType === 'video') {
-    if (mediaUrl?.startsWith('blob:') || mediaUrl?.startsWith('data:')) {
-      return <video src={mediaUrl} className={imageClass} muted />;
+    if (resolvedMediaUrl.startsWith('blob:') || resolvedMediaUrl.startsWith('data:')) {
+      return <video src={resolvedMediaUrl} className={imageClass} muted />;
     }
 
     return (
       <div className="relative">
-        {!imageFailed ? (
-          <img
-            src={mediaUrl ?? getTemplatePreviewPlaceholderImage(`video-${placeholderSeed}`)}
-            alt=""
-            className={imageClass}
-            onError={() => setImageFailed(true)}
-          />
-        ) : (
-          <MediaFallback variant={variant} label="Video" />
-        )}
+        <img
+          src={resolvedMediaUrl}
+          alt=""
+          className={imageClass}
+          onError={() => setImageFailed(true)}
+        />
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/20">
           <div
             className={cn(
@@ -80,35 +76,12 @@ export function TemplatePreviewHeaderMedia({
     );
   }
 
-  if (imageFailed) {
-    return <MediaFallback variant={variant} label="Image" />;
-  }
-
   return (
     <img
-      src={imageSrc}
+      src={resolvedMediaUrl}
       alt=""
       className={imageClass}
       onError={() => setImageFailed(true)}
     />
-  );
-}
-
-function MediaFallback({
-  variant,
-  label,
-}: {
-  variant: 'mini' | 'full';
-  label: string;
-}) {
-  return (
-    <div
-      className={cn(
-        'flex w-full items-center justify-center rounded bg-muted text-muted-foreground',
-        variant === 'mini' ? 'mb-2 h-10 text-[10px]' : 'h-36 text-xs',
-      )}
-    >
-      {label}
-    </div>
   );
 }

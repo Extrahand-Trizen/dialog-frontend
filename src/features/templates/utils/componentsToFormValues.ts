@@ -91,6 +91,7 @@ export function componentsToFormValues(detail: TemplateDetailDto): Partial<Templ
   let headerType: TemplateCreateFormValues['headerType'] = 'none';
   let headerText = '';
   let headerMediaHandle = '';
+  let headerMediaUrl = '';
   let headerMediaFormat: TemplateCreateFormValues['headerMediaFormat'];
   let bodyText = '';
   let enableFooter = false;
@@ -128,6 +129,7 @@ export function componentsToFormValues(detail: TemplateDetailDto): Partial<Templ
         }
 
         let imageHandle = '';
+        let imageMediaUrl = '';
         let cardBodyText = '';
         let enableButton = false;
         let buttonText = '';
@@ -140,9 +142,12 @@ export function componentsToFormValues(detail: TemplateDetailDto): Partial<Templ
 
           const compType = compRaw.type.toUpperCase();
           if (compType === 'HEADER') {
-            const handles = (compRaw.example as { header_handle?: string[] } | undefined)
-              ?.header_handle;
+            const example = compRaw.example as
+              | { header_handle?: string[]; header_media_url?: string; image_media_url?: string }
+              | undefined;
+            const handles = example?.header_handle;
             imageHandle = handles?.[0] ?? '';
+            imageMediaUrl = example?.image_media_url ?? example?.header_media_url ?? '';
           }
 
           if (compType === 'BODY' && typeof compRaw.text === 'string') {
@@ -162,6 +167,7 @@ export function componentsToFormValues(detail: TemplateDetailDto): Partial<Templ
         carouselCards.push({
           id: createCarouselCardId(),
           imageHandle,
+          imageMediaUrl,
           imageFileName: imageHandle ? 'existing-media' : '',
           bodyText: cardBodyText,
           enableButton,
@@ -175,21 +181,22 @@ export function componentsToFormValues(detail: TemplateDetailDto): Partial<Templ
 
     if (type === 'HEADER') {
       const format = typeof raw.format === 'string' ? raw.format.toUpperCase() : 'TEXT';
+      const example = raw.example as { header_handle?: string[]; header_media_url?: string } | undefined;
       if (format === 'IMAGE') {
         headerType = 'image';
         headerMediaFormat = 'IMAGE';
-        const handles = (raw.example as { header_handle?: string[] } | undefined)?.header_handle;
-        headerMediaHandle = handles?.[0] ?? '';
+        headerMediaHandle = example?.header_handle?.[0] ?? '';
+        headerMediaUrl = example?.header_media_url ?? '';
       } else if (format === 'VIDEO') {
         headerType = 'video';
         headerMediaFormat = 'VIDEO';
-        const handles = (raw.example as { header_handle?: string[] } | undefined)?.header_handle;
-        headerMediaHandle = handles?.[0] ?? '';
+        headerMediaHandle = example?.header_handle?.[0] ?? '';
+        headerMediaUrl = example?.header_media_url ?? '';
       } else if (format === 'DOCUMENT') {
         headerType = 'document';
         headerMediaFormat = 'DOCUMENT';
-        const handles = (raw.example as { header_handle?: string[] } | undefined)?.header_handle;
-        headerMediaHandle = handles?.[0] ?? '';
+        headerMediaHandle = example?.header_handle?.[0] ?? '';
+        headerMediaUrl = example?.header_media_url ?? '';
       } else if (typeof raw.text === 'string') {
         headerType = 'text';
         headerText = metaTextToNamed(raw.text, indexToName);
@@ -285,6 +292,7 @@ export function componentsToFormValues(detail: TemplateDetailDto): Partial<Templ
     headerType,
     headerText,
     headerMediaHandle,
+    headerMediaUrl: headerMediaUrl || undefined,
     headerMediaFormat,
     headerMediaFileName: headerMediaHandle ? 'existing-media' : '',
     bodyText,

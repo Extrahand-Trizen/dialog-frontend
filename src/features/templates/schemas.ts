@@ -22,6 +22,7 @@ const urlButtonRowSchema = z.object({
 const carouselCardRowSchema = z.object({
   id: z.string(),
   imageHandle: z.string(),
+  imageMediaUrl: z.string().optional(),
   imageFileName: z.string(),
   bodyText: z.string().max(160),
   enableButton: z.boolean(),
@@ -63,6 +64,7 @@ export const templateCreateFormSchema = z
     headerType: z.enum(TEMPLATE_HEADER_TYPES),
     headerText: z.string().max(60).optional(),
     headerMediaHandle: z.string().optional(),
+    headerMediaUrl: z.string().url().optional(),
     headerMediaFormat: z.enum(['IMAGE', 'VIDEO', 'DOCUMENT']).optional(),
     headerMediaFileName: z.string().optional(),
     bodyText: z.string().min(1, 'Body is required').max(1024),
@@ -279,6 +281,7 @@ export const TEMPLATE_CREATE_DEFAULTS: TemplateCreateFormValues = {
   headerType: 'none',
   headerText: '',
   headerMediaHandle: '',
+  headerMediaUrl: undefined,
   headerMediaFormat: undefined,
   headerMediaFileName: '',
   bodyText: '',
@@ -315,6 +318,7 @@ export function toCreateTemplateRequest(
       body: { text: values.bodyText.trim() },
       carouselCards: values.carouselCards.map((card) => ({
         imageHandle: card.imageHandle.trim(),
+        ...(card.imageMediaUrl?.trim() ? { imageMediaUrl: card.imageMediaUrl.trim() } : {}),
         bodyText: card.bodyText.trim(),
         ...(card.enableButton && card.buttonText.trim() && card.buttonUrl.trim()
           ? {
@@ -343,6 +347,7 @@ export function toCreateTemplateRequest(
     header = {
       format: values.headerMediaFormat,
       handle: values.headerMediaHandle.trim(),
+      ...(values.headerMediaUrl?.trim() ? { mediaUrl: values.headerMediaUrl.trim() } : {}),
     };
   }
 

@@ -53,6 +53,7 @@ export function CarouselCardsPanel({
       append({
         id: createCarouselCardId(),
         imageHandle: '',
+        imageMediaUrl: '',
         imageFileName: '',
         bodyText: '',
         enableButton: false,
@@ -62,6 +63,7 @@ export function CarouselCardsPanel({
       append({
         id: createCarouselCardId(),
         imageHandle: '',
+        imageMediaUrl: '',
         imageFileName: '',
         bodyText: '',
         enableButton: false,
@@ -93,6 +95,7 @@ export function CarouselCardsPanel({
         form.setValue(`carouselCards.${cardIndex}.imageHandle`, result.handle, {
           shouldValidate: true,
         });
+        form.setValue(`carouselCards.${cardIndex}.imageMediaUrl`, result.mediaUrl);
         form.setValue(`carouselCards.${cardIndex}.imageFileName`, result.fileName);
       } catch (error) {
         URL.revokeObjectURL(localPreview);
@@ -114,6 +117,7 @@ export function CarouselCardsPanel({
         return next;
       });
       form.setValue(`carouselCards.${cardIndex}.imageHandle`, '', { shouldValidate: true });
+      form.setValue(`carouselCards.${cardIndex}.imageMediaUrl`, '');
       form.setValue(`carouselCards.${cardIndex}.imageFileName`, '');
     },
     [form],
@@ -134,6 +138,8 @@ export function CarouselCardsPanel({
         const bodyText = form.watch(`carouselCards.${index}.bodyText`) ?? '';
         const enableButton = form.watch(`carouselCards.${index}.enableButton`);
         const previewUrl = previewUrls[cardId];
+        const storedMediaUrl = form.watch(`carouselCards.${index}.imageMediaUrl`);
+        const displayImageUrl = previewUrl ?? storedMediaUrl;
         const isUploading = uploadingCardId === cardId;
 
         return (
@@ -206,9 +212,9 @@ export function CarouselCardsPanel({
                       </Button>
                     ) : null}
                   </div>
-                  {previewUrl ? (
+                  {displayImageUrl ? (
                     <img
-                      src={previewUrl}
+                      src={displayImageUrl}
                       alt=""
                       className="mt-2 max-h-32 rounded-md border object-contain"
                     />
@@ -300,6 +306,7 @@ export function CarouselCardsPanel({
             append({
               id: createCarouselCardId(),
               imageHandle: '',
+              imageMediaUrl: '',
               imageFileName: '',
               bodyText: '',
               enableButton: false,

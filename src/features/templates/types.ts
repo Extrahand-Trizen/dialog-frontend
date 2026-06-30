@@ -20,11 +20,14 @@ export type CarouselCardPreview = {
   headerType: 'image';
   bodyText: string;
   buttonText?: string;
+  imageHandle?: string;
+  imageMediaUrl?: string;
 };
 
 export type CarouselCardFormRow = {
   id: string;
   imageHandle: string;
+  imageMediaUrl: string;
   imageFileName: string;
   bodyText: string;
   enableButton: boolean;
@@ -42,6 +45,8 @@ export type TemplateSummaryPreviewDto = {
   templateKind: TemplateFormat;
   headerType: 'none' | 'text' | 'image' | 'video' | 'document';
   headerText?: string;
+  headerMediaHandle?: string;
+  headerMediaUrl?: string;
   bodyText: string;
   footerText?: string;
   buttons: TemplateButtonPreview[];
@@ -93,7 +98,7 @@ export type CreateTemplateRequest = {
   category: TemplateCategory;
   header?:
     | { text: string }
-    | { format: 'IMAGE' | 'VIDEO' | 'DOCUMENT'; handle: string };
+    | { format: 'IMAGE' | 'VIDEO' | 'DOCUMENT'; handle: string; mediaUrl?: string };
   body: { text: string };
   footer?: { text: string };
   variableSamples?: Record<string, string>;
@@ -102,6 +107,7 @@ export type CreateTemplateRequest = {
   templateFormat?: TemplateFormat;
   carouselCards?: Array<{
     imageHandle: string;
+    imageMediaUrl?: string;
     bodyText: string;
     button?: { type: 'URL'; text: string; url: string } | { type: 'QUICK_REPLY'; text: string };
   }>;
@@ -119,6 +125,8 @@ export type TemplatePreviewDto = {
   templateKind: TemplateFormat;
   headerType: 'none' | 'text' | 'image' | 'video' | 'document';
   headerText?: string;
+  headerMediaHandle?: string;
+  headerMediaUrl?: string;
   bodyText: string;
   footerText?: string;
   buttons: TemplateButtonPreview[];
@@ -128,6 +136,7 @@ export type TemplatePreviewDto = {
 
 export type UploadTemplateMediaResponse = {
   handle: string;
+  mediaUrl: string;
   format: 'IMAGE' | 'VIDEO' | 'DOCUMENT';
   mimeType: string;
   fileName: string;

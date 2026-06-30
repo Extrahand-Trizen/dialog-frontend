@@ -76,6 +76,7 @@ export function TemplateCreateForm({
   const headerText = watched.headerText;
   const bodyText = watched.bodyText ?? '';
   const headerMediaFileName = watched.headerMediaFileName;
+  const headerMediaUrl = watched.headerMediaUrl;
 
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | undefined>();
   const [bodySelection, setBodySelection] = useState({ start: 0, end: 0 });
@@ -97,6 +98,7 @@ export function TemplateCreateForm({
       return undefined;
     });
     form.setValue('headerMediaHandle', '');
+    form.setValue('headerMediaUrl', undefined);
     form.setValue('headerMediaFormat', undefined);
     form.setValue('headerMediaFileName', '');
   }, [form]);
@@ -286,6 +288,7 @@ export function TemplateCreateForm({
                             form.setValue('headerMediaHandle', result.handle, {
                               shouldValidate: true,
                             });
+                            form.setValue('headerMediaUrl', result.mediaUrl);
                             form.setValue('headerMediaFormat', result.format);
                             form.setValue('headerMediaFileName', result.fileName);
                           }}
@@ -439,8 +442,7 @@ export function TemplateCreateForm({
               footerText={preview.footerText}
               buttons={preview.buttons}
               carouselCards={preview.carouselCards}
-              mediaPreviewUrl={mediaPreviewUrl}
-              placeholderSeed={form.getValues('name') || 'draft'}
+              mediaPreviewUrl={mediaPreviewUrl ?? headerMediaUrl}
             />
           </div>
         </div>

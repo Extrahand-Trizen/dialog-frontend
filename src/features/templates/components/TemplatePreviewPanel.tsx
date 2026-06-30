@@ -1,7 +1,7 @@
 import { Copy, ExternalLink, Phone, Reply } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { TemplatePreviewHeaderMedia } from '@/features/templates/components/TemplatePreviewHeaderMedia';
-import { getTemplatePreviewPlaceholderImage } from '@/features/templates/utils/previewPlaceholders';
+import { TemplateCarouselCardImage } from '@/features/templates/components/TemplateCarouselCardImage';
 import type { TemplateHeaderType, TemplatePreviewDto, TemplateFormat } from '@/features/templates/types';
 
 type TemplatePreviewPanelProps = {
@@ -12,8 +12,8 @@ type TemplatePreviewPanelProps = {
   footerText?: string;
   buttons?: TemplatePreviewDto['buttons'];
   mediaPreviewUrl?: string;
+  headerMediaUrl?: string;
   carouselCards?: TemplatePreviewDto['carouselCards'];
-  placeholderSeed?: string | number;
 };
 export function TemplatePreviewPanel({
   templateKind = 'standard',
@@ -23,8 +23,8 @@ export function TemplatePreviewPanel({
   footerText,
   buttons = [],
   mediaPreviewUrl,
+  headerMediaUrl,
   carouselCards = [],
-  placeholderSeed = 0,
 }: TemplatePreviewPanelProps) {
   const resolvedHeaderType = headerType === 'none' ? 'none' : headerType;
   const isCarousel = templateKind === 'carousel';
@@ -52,12 +52,11 @@ export function TemplatePreviewPanel({
                 resolvedHeaderType === 'document' ? (
                   <TemplatePreviewHeaderMedia
                     headerType={resolvedHeaderType}
-                    mediaUrl={mediaPreviewUrl}
-                    placeholderSeed={placeholderSeed}
+                    mediaUrl={mediaPreviewUrl ?? headerMediaUrl}
                     variant="full"
                   />
                 ) : null}
-                <div className="max-h-80 overflow-y-auto p-4">
+                <div className="p-4">
                   {resolvedHeaderType === 'text' && headerText?.trim() ? (
                     <p className="mb-2 break-words text-sm font-semibold [overflow-wrap:anywhere]">
                       {headerText}
@@ -94,13 +93,12 @@ export function TemplatePreviewPanel({
                       key={`carousel-${index}`}
                       className="w-44 shrink-0 overflow-hidden rounded-md border bg-background"
                     >
-                      <img
-                        src={getTemplatePreviewPlaceholderImage(`${placeholderSeed}-card-${index}`)}
-                        alt=""
-                        className="h-24 w-full object-cover"
+                      <TemplateCarouselCardImage
+                        imageMediaUrl={card.imageMediaUrl}
+                        variant="full"
                       />
                       <div className="p-2">
-                        <p className="line-clamp-4 break-words text-xs [overflow-wrap:anywhere]">
+                        <p className="break-words text-xs [overflow-wrap:anywhere]">
                           {card.bodyText}
                         </p>
                         {card.buttonText ? (

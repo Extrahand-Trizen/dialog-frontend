@@ -66,11 +66,11 @@ export function TemplateDetailDialog({
                 templateKind={data.preview.templateKind}
                 headerType={data.preview.headerType}
                 headerText={data.preview.headerText}
+                headerMediaUrl={data.preview.headerMediaUrl}
                 bodyText={data.preview.bodyText}
                 footerText={data.preview.footerText}
                 buttons={data.preview.buttons}
                 carouselCards={data.preview.carouselCards}
-                placeholderSeed={data.metaTemplateName || data.id}
               />
             ) : null}
 
