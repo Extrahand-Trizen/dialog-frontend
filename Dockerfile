@@ -1,4 +1,4 @@
-# TrizenDialog ops console — Vite build + nginx (runtime env via entrypoint)
+# TrizenDialog ops console — Vite build + nginx (runtime env via docker-entrypoint.d)
 FROM node:20-alpine AS deps
 
 WORKDIR /app
@@ -17,13 +17,14 @@ ARG CACHE_BUST=1
 
 RUN echo "Cache bust: ${CACHE_BUST}" > /dev/null && npm run build
 
-FROM nginx:1.28-alpine AS runner
+FROM nginx:alpine AS runner
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
+COPY docker-entrypoint.d/40-runtime-config.sh /docker-entrypoint.d/40-runtime-config.sh
+RUN sed -i 's/\r$//' /docker-entrypoint.d/40-runtime-config.sh \
+  && chmod +x /docker-entrypoint.d/40-runtime-config.sh
 
 EXPOSE 80
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]
