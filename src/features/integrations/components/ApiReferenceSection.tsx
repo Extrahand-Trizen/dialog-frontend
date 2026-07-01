@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { ArrowRight, FileText, KeyRound, MessageSquare, Webhook } from 'lucide-react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -9,6 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { CodeSnippet } from '@/features/integrations/components/CodeSnippet';
+import { DocSubsection, IntegrationDocCard } from '@/features/integrations/components/IntegrationDocCard';
 import {
   API_BASE_URL,
   SEND_ERROR_ROWS,
@@ -18,175 +21,187 @@ import {
   TEMPLATE_CREATE_EXAMPLE,
   MEDIA_UPLOAD_EXAMPLE,
 } from '@/features/integrations/constants';
+import { cn } from '@/lib/utils';
 
 const CURL_EXAMPLE = `curl -X POST "${API_BASE_URL}/messages" \\
   -H "Authorization: Bearer td_YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '${SEND_EXAMPLE.replace(/\n/g, '\n  ')}'`;
 
+const WORKFLOW_STEPS = [
+  {
+    step: 1,
+    title: 'Connect WhatsApp',
+    description: 'Link your Meta WhatsApp Business Account.',
+    href: '/whatsapp',
+    icon: MessageSquare,
+  },
+  {
+    step: 2,
+    title: 'Create templates',
+    description: 'Submit templates and wait for Meta approval.',
+    href: '/templates',
+    icon: FileText,
+  },
+  {
+    step: 3,
+    title: 'Create API key',
+    description: 'Generate a key with Send messages scope.',
+    href: '/api-keys',
+    icon: KeyRound,
+  },
+  {
+    step: 4,
+    title: 'Configure webhooks',
+    description: 'Receive delivery updates on your backend.',
+    href: '#outbound-webhooks',
+    icon: Webhook,
+  },
+  {
+    step: 5,
+    title: 'Send messages',
+    description: 'Call POST /messages from your services.',
+    href: '#send-api',
+    icon: ArrowRight,
+  },
+] as const;
+
+function DocTable({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={cn('overflow-hidden rounded-lg border', className)}>
+      <Table>{children}</Table>
+    </div>
+  );
+}
+
 export function SendApiCard() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>POST /messages</CardTitle>
-        <CardDescription>
-          Send an approved WhatsApp template. API key with{' '}
+    <IntegrationDocCard
+      id="send-api"
+      title="/messages"
+      method="POST"
+      path={`POST ${API_BASE_URL}/messages`}
+      description={
+        <>
+          Send an approved WhatsApp template. Requires an API key with{' '}
           <code className="text-foreground">messages:write</code> scope.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <p className="text-sm font-medium">Endpoint</p>
-          <code className="mt-1 block rounded-md bg-muted px-3 py-2 text-sm break-all">
-            POST {API_BASE_URL}/messages
-          </code>
-        </div>
-
-        <div>
-          <p className="text-sm font-medium">Request fields</p>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Field</TableHead>
-                <TableHead>Required</TableHead>
-                <TableHead>Description</TableHead>
+        </>
+      }
+    >
+      <DocSubsection title="Request fields">
+        <DocTable>
+          <TableHeader>
+            <TableRow className="bg-muted/30 hover:bg-muted/30">
+              <TableHead className="w-[140px]">Field</TableHead>
+              <TableHead className="w-[90px]">Required</TableHead>
+              <TableHead>Description</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {SEND_FIELD_ROWS.map((row) => (
+              <TableRow key={row.field}>
+                <TableCell className="font-mono text-xs">{row.field}</TableCell>
+                <TableCell>
+                  <span
+                    className={cn(
+                      'text-xs font-medium',
+                      row.required ? 'text-foreground' : 'text-muted-foreground',
+                    )}
+                  >
+                    {row.required ? 'Yes' : 'No'}
+                  </span>
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">{row.description}</TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {SEND_FIELD_ROWS.map((row) => (
-                <TableRow key={row.field}>
-                  <TableCell>
-                    <code>{row.field}</code>
-                  </TableCell>
-                  <TableCell>{row.required ? 'Yes' : 'No'}</TableCell>
-                  <TableCell className="text-muted-foreground">{row.description}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+            ))}
+          </TableBody>
+        </DocTable>
+      </DocSubsection>
 
-        <div>
-          <p className="text-sm font-medium">Request body</p>
-          <pre className="mt-1 overflow-x-auto rounded-md bg-muted p-3 text-xs leading-relaxed">
-            {SEND_EXAMPLE}
-          </pre>
-        </div>
+      <CodeSnippet label="Request body" code={SEND_EXAMPLE} />
 
-        <div>
-          <p className="text-sm font-medium">Success response</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            <code className="text-foreground">202 Accepted</code> for new sends;{' '}
-            <code className="text-foreground">200 OK</code> when{' '}
-            <code className="text-foreground">duplicate: true</code> (same idempotencyKey).
-          </p>
-          <pre className="mt-1 overflow-x-auto rounded-md bg-muted p-3 text-xs leading-relaxed">
-            {SEND_SUCCESS_EXAMPLE}
-          </pre>
-        </div>
-
-        <div>
-          <p className="text-sm font-medium">Common errors</p>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>errorCode</TableHead>
-                <TableHead>When</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {SEND_ERROR_ROWS.map((row) => (
-                <TableRow key={row.code}>
-                  <TableCell>
-                    <code>{row.code}</code>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{row.when}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-
-        <div>
-          <p className="text-sm font-medium">cURL</p>
-          <pre className="mt-1 overflow-x-auto rounded-md bg-muted p-3 text-xs leading-relaxed">
-            {CURL_EXAMPLE}
-          </pre>
-        </div>
-
+      <DocSubsection title="Success response">
         <p className="text-sm text-muted-foreground">
-          Poll status via{' '}
-          <code className="text-foreground">GET /messages?idempotencyKey=…</code> or{' '}
-          <code className="text-foreground">GET /messages/:id</code> (JWT). Prefer outbound
-          webhooks for delivery updates.
+          <code className="text-foreground">202 Accepted</code> for new sends;{' '}
+          <code className="text-foreground">200 OK</code> when{' '}
+          <code className="text-foreground">duplicate: true</code> (same idempotencyKey).
         </p>
-      </CardContent>
-    </Card>
+        <CodeSnippet code={SEND_SUCCESS_EXAMPLE} />
+      </DocSubsection>
+
+      <DocSubsection title="Common errors">
+        <DocTable>
+          <TableHeader>
+            <TableRow className="bg-muted/30 hover:bg-muted/30">
+              <TableHead className="w-[200px]">errorCode</TableHead>
+              <TableHead>When</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {SEND_ERROR_ROWS.map((row) => (
+              <TableRow key={row.code}>
+                <TableCell className="font-mono text-xs">{row.code}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">{row.when}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </DocTable>
+      </DocSubsection>
+
+      <CodeSnippet label="cURL" code={CURL_EXAMPLE} />
+
+      <p className="text-sm text-muted-foreground">
+        Poll status via <code className="text-foreground">GET /messages?idempotencyKey=…</code> or{' '}
+        <code className="text-foreground">GET /messages/:id</code> (JWT). Prefer outbound webhooks
+        for delivery updates.
+      </p>
+    </IntegrationDocCard>
   );
 }
 
 export function TemplatesApiCard() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>POST /templates</CardTitle>
-        <CardDescription>
-          Create and submit templates to Meta. Requires admin JWT (operator UI), not API key.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <p className="text-sm font-medium">Endpoint</p>
-          <code className="mt-1 block rounded-md bg-muted px-3 py-2 text-sm break-all">
-            POST {API_BASE_URL}/templates
-          </code>
-        </div>
-        <div>
-          <p className="text-sm font-medium">Request body</p>
-          <pre className="mt-1 overflow-x-auto rounded-md bg-muted p-3 text-xs leading-relaxed">
-            {TEMPLATE_CREATE_EXAMPLE}
-          </pre>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Use named placeholders like{' '}
-          <code className="text-foreground">{'{{customerName}}'}</code> in body text. For{' '}
-          <strong className="text-foreground">IMAGE</strong> or{' '}
-          <strong className="text-foreground">VIDEO</strong> headers, upload media first via{' '}
-          <code className="text-foreground">POST /media/upload</code> and pass the returned{' '}
-          <code className="text-foreground">handle</code> in{' '}
-          <code className="text-foreground">header.format</code> +{' '}
-          <code className="text-foreground">header.handle</code>. The create UI on{' '}
-          <Link to="/templates/new" className="text-primary underline-offset-4 hover:underline">
-            New template
-          </Link>{' '}
-          uploads automatically.
-        </p>
-        <div>
-          <p className="text-sm font-medium">Media upload (before template create)</p>
-          <pre className="mt-1 overflow-x-auto rounded-md bg-muted p-3 text-xs leading-relaxed">
-            {MEDIA_UPLOAD_EXAMPLE}
-          </pre>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Requires admin JWT and server env <code className="text-foreground">META_APP_ID</code>.
-            JPEG/PNG up to 5 MB; MP4 up to 16 MB.
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+    <IntegrationDocCard
+      title="/templates"
+      method="POST"
+      path={`POST ${API_BASE_URL}/templates`}
+      description="Create and submit templates to Meta. Requires admin JWT (operator UI), not API key."
+    >
+      <CodeSnippet label="Request body" code={TEMPLATE_CREATE_EXAMPLE} />
+
+      <p className="text-sm leading-relaxed text-muted-foreground">
+        Use named placeholders like <code className="text-foreground">{'{{customerName}}'}</code> in
+        body text. For <strong className="text-foreground">IMAGE</strong> or{' '}
+        <strong className="text-foreground">VIDEO</strong> headers, upload media first via{' '}
+        <code className="text-foreground">POST /media/upload</code> and pass the returned{' '}
+        <code className="text-foreground">handle</code> in{' '}
+        <code className="text-foreground">header.format</code> +{' '}
+        <code className="text-foreground">header.handle</code>. The create UI on{' '}
+        <Link to="/templates/new" className="text-primary underline-offset-4 hover:underline">
+          New template
+        </Link>{' '}
+        uploads automatically.
+      </p>
+
+      <CodeSnippet label="Media upload (before template create)" code={MEDIA_UPLOAD_EXAMPLE} />
+
+      <p className="text-xs text-muted-foreground">
+        Requires admin JWT and server env <code className="text-foreground">META_APP_ID</code>.
+        JPEG/PNG up to 5 MB; MP4 up to 16 MB.
+      </p>
+    </IntegrationDocCard>
   );
 }
 
 export function ResponseFormatCard() {
   return (
-    <Card className="lg:col-span-2">
-      <CardHeader>
-        <CardTitle>Response format</CardTitle>
-        <CardDescription>
-          The platform uses a consistent JSON envelope — not MyOperator&apos;s status/code wrapper.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3 text-sm text-muted-foreground">
-        <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs leading-relaxed text-foreground">{`{
+    <IntegrationDocCard
+      title="Response format"
+      description="The platform uses a consistent JSON envelope — not MyOperator's status/code wrapper."
+      className="lg:col-span-2"
+    >
+      <CodeSnippet
+        code={`{
   "success": true | false,
   "message": "Human-readable summary",
   "data": { ... } | null,
@@ -199,51 +214,73 @@ export function ResponseFormatCard() {
   "message": "...",
   "errorCode": "VALIDATION_ERROR",
   "details": { ... } // optional
-}`}</pre>
-        <p>
-          Create API keys in{' '}
-          <Link to="/api-keys" className="text-primary underline-offset-4 hover:underline">
-            API Keys
-          </Link>{' '}
-          with <code className="text-foreground">messages:write</code>. Pass{' '}
-          <code className="text-foreground">Authorization: Bearer td_…</code> on integrator calls.
-        </p>
-      </CardContent>
-    </Card>
+}`}
+      />
+      <p className="text-sm leading-relaxed text-muted-foreground">
+        Create API keys in{' '}
+        <Link to="/api-keys" className="text-primary underline-offset-4 hover:underline">
+          API Keys
+        </Link>{' '}
+        with <code className="text-foreground">messages:write</code>. Pass{' '}
+        <code className="text-foreground">Authorization: Bearer td_…</code> on integrator calls.
+      </p>
+    </IntegrationDocCard>
   );
 }
 
 export function OperatorWorkflowCard() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Operator workflow</CardTitle>
-        <CardDescription>From zero to production sends.</CardDescription>
+    <Card className="overflow-hidden shadow-sm">
+      <CardHeader className="border-b bg-muted/25 px-5 py-4">
+        <CardTitle className="text-base font-semibold text-foreground">Getting started</CardTitle>
+        <CardDescription className="text-sm">
+          From zero to production sends in five steps.
+        </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4 text-sm text-muted-foreground">
-        <ol className="list-decimal space-y-3 pl-5">
-          <li>
-            Connect WhatsApp under{' '}
-            <Link to="/whatsapp" className="text-primary underline-offset-4 hover:underline">
-              WhatsApp
-            </Link>
-            .
-          </li>
-          <li>
-            Create templates in{' '}
-            <Link to="/templates" className="text-primary underline-offset-4 hover:underline">
-              Templates
-            </Link>{' '}
-            and wait for Meta approval.
-          </li>
-          <li>
-            Create an API key with Send messages scope.
-          </li>
-          <li>Configure outbound webhooks below (optional but recommended).</li>
-          <li>
-            Integrate <code className="text-foreground">POST /messages</code> from ExtraHand or
-            other backends.
-          </li>
+      <CardContent className="p-5">
+        <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          {WORKFLOW_STEPS.map((item) => {
+            const Icon = item.icon;
+            const isAnchor = item.href.startsWith('#');
+            const content = (
+              <>
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                  {item.step}
+                </div>
+                <div className="min-w-0 flex-1 space-y-0.5">
+                  <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                    <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                    {item.title}
+                  </p>
+                  <p className="text-xs leading-relaxed text-muted-foreground">{item.description}</p>
+                </div>
+              </>
+            );
+
+            if (isAnchor) {
+              return (
+                <li key={item.step}>
+                  <a
+                    href={item.href}
+                    className="flex h-full gap-3 rounded-lg border bg-background p-3 transition-colors hover:border-primary/30 hover:bg-muted/30"
+                  >
+                    {content}
+                  </a>
+                </li>
+              );
+            }
+
+            return (
+              <li key={item.step}>
+                <Link
+                  to={item.href}
+                  className="flex h-full gap-3 rounded-lg border bg-background p-3 transition-colors hover:border-primary/30 hover:bg-muted/30"
+                >
+                  {content}
+                </Link>
+              </li>
+            );
+          })}
         </ol>
       </CardContent>
     </Card>

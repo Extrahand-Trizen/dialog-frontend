@@ -1,7 +1,7 @@
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { InlineError } from '@/components/shared/InlineError';
 import { ListPageShell } from '@/components/shared/ListPageLayout';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,6 +11,7 @@ import { useWhatsAppAccounts } from '@/hooks/use-whatsapp-accounts';
 import { useAuth } from '@/features/auth/context/AuthProvider';
 import { getTemplate } from '@/features/templates/api/getTemplate';
 import { TemplateCreateForm } from '@/features/templates/components/TemplateCreateForm';
+import { TemplateFormPageHeader } from '@/features/templates/components/TemplateFormPageHeader';
 import { useUpdateTemplate } from '@/features/templates/hooks/useUpdateTemplate';
 import { templateKeys } from '@/features/templates/queryKeys';
 import {
@@ -27,7 +28,7 @@ export function EditTemplatePage() {
   const useMockData = isDevMockAuthEnabled();
   const { user } = useAuth();
   const updateMutation = useUpdateTemplate();
-  const { defaultAccountId, accounts, isLoading: accountsLoading, isError: accountsError, error: accountsLoadError } =
+  const { defaultAccountId, connectedAccounts, isLoading: accountsLoading, isError: accountsError, error: accountsLoadError } =
     useWhatsAppAccounts();
 
   const canManage = canSyncTemplates(user);
@@ -93,24 +94,26 @@ export function EditTemplatePage() {
 
   return (
     <ListPageShell>
-      <div className="mb-2">
-        <Button variant="ghost" size="sm" asChild className="-ml-2">
-          <Link to="/templates">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to templates
-          </Link>
-        </Button>
-      </div>
+      <TemplateFormPageHeader
+        mode="edit"
+        templateName={template.metaTemplateName}
+        connectedAccounts={connectedAccounts}
+        selectedAccountId={defaultAccountId}
+      />
 
       {accountsError ? (
         <InlineError error={accountsLoadError} />
-      ) : !defaultAccountId || !accounts?.length ? (
-        <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-          <p>Connect a WhatsApp Business account before editing templates.</p>
-          <Button asChild className="mt-4" variant="outline">
-            <Link to="/whatsapp">Go to WhatsApp setup</Link>
-          </Button>
-        </div>
+      ) : !defaultAccountId || !connectedAccounts.length ? (
+        <Card className="border-dashed shadow-sm">
+          <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
+            <p className="text-sm font-medium text-foreground">
+              Connect a WhatsApp Business account before editing templates.
+            </p>
+            <Button asChild className="mt-2" variant="outline">
+              <Link to="/whatsapp">Go to WhatsApp setup</Link>
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         <TemplateCreateForm
           mode="edit"

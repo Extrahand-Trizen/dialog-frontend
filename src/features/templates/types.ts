@@ -81,10 +81,6 @@ export type TemplateDetailDto = TemplateSummaryDto & {
   } | null;
 };
 
-export type SyncTemplatesRequest = {
-  whatsAppAccountId: string;
-};
-
 export type TemplateButtonRequest =
   | { type: 'QUICK_REPLY'; text: string }
   | { type: 'URL'; text: string; url: string; urlType?: 'static' | 'dynamic' }
@@ -145,11 +141,6 @@ export type UploadTemplateMediaResponse = {
 
 export const TEMPLATE_HEADER_TYPES = ['none', 'text', 'image', 'video', 'document'] as const;
 export type TemplateHeaderType = (typeof TEMPLATE_HEADER_TYPES)[number];
-
-export type EnqueueTemplateSyncResponse = {
-  whatsAppAccountId: string;
-  queued: true;
-};
 
 export type ListTemplatesRequest = {
   page: number;

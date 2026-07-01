@@ -25,10 +25,10 @@ export function PeriodSelector({ value, onChange }: PeriodSelectorProps) {
           type="button"
           onClick={() => onChange(period)}
           className={cn(
-            'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+            'rounded-md px-3.5 py-1.5 text-sm font-medium transition-colors',
             value === period
-              ? 'bg-background text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground',
+              ? 'bg-background font-semibold text-foreground shadow-sm'
+              : 'text-foreground/70 hover:bg-background/60 hover:text-foreground',
           )}
         >
           {PERIOD_LABELS[period]}

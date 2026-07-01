@@ -1,9 +1,9 @@
 import { memo } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { StatusBadge } from '@/components/shared/StatusBadge';
 import { formatDateTime } from '@/lib/format';
 import type { TemplateSummaryDto } from '@/features/templates/types';
 import { TemplateMiniPreview } from '@/features/templates/components/TemplateMiniPreview';
+import { TemplateStatusBadge } from '@/features/templates/components/TemplateStatusBadge';
 
 type TemplateCardProps = {
   template: TemplateSummaryDto;
@@ -15,7 +15,7 @@ export const TemplateCard = memo(function TemplateCard({ template, onSelect }: T
 
   return (
     <Card
-      className="cursor-pointer overflow-hidden transition-shadow hover:shadow-md"
+      className="group cursor-pointer overflow-hidden border-border/80 transition-all hover:border-border hover:shadow-md"
       onClick={() => onSelect(template.id)}
     >
       <CardHeader className="space-y-1 p-3 pb-2">
@@ -26,7 +26,7 @@ export const TemplateCard = memo(function TemplateCard({ template, onSelect }: T
               {template.category} · {template.language.toUpperCase()}
             </p>
           </div>
-          <StatusBadge status={template.metaStatus} />
+          <TemplateStatusBadge status={template.metaStatus} />
         </div>
       </CardHeader>
       <CardContent className="px-3 pb-2 pt-0">
@@ -42,8 +42,8 @@ export const TemplateCard = memo(function TemplateCard({ template, onSelect }: T
           carouselCards={preview?.carouselCards}
         />
       </CardContent>
-      <CardFooter className="flex flex-wrap items-center justify-between gap-1 border-t bg-muted/20 px-3 py-1.5 text-[11px] text-muted-foreground">
-        <span>{template.createdByName ? `By ${template.createdByName}` : 'Synced from Meta'}</span>
+      <CardFooter className="flex flex-wrap items-center justify-between gap-1 border-t bg-muted/30 px-3 py-2 text-[11px] text-muted-foreground">
+        <span>{template.createdByName ? `By ${template.createdByName}` : 'System'}</span>
         <span>Updated {formatDateTime(template.updatedAt)}</span>
       </CardFooter>
     </Card>

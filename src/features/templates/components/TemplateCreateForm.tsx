@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { FormSectionCard } from '@/features/templates/components/FormSectionCard';
 import { HeaderMediaUpload } from '@/features/templates/components/HeaderMediaUpload';
 import { CarouselCardsPanel } from '@/features/templates/components/CarouselCardsPanel';
 import { AddVariableButton } from '@/features/templates/components/AddVariableButton';
@@ -35,9 +36,7 @@ import {
 } from '@/features/templates/schemas';
 import { TEMPLATE_CATEGORIES, type TemplateHeaderType } from '@/features/templates/types';
 import { useTemplateCreateLivePreview } from '@/features/templates/hooks/useTemplateCreateLivePreview';
-import {
-  insertPlaceholderAtCursor,
-} from '@/features/templates/utils/templateVariables';
+import { insertPlaceholderAtCursor } from '@/features/templates/utils/templateVariables';
 
 type TemplateCreateFormProps = {
   whatsAppAccountId: string;
@@ -110,8 +109,7 @@ export function TemplateCreateForm({
       if (value !== 'text') {
         form.setValue('headerText', '');
       }
-      const hadMedia =
-        previous === 'image' || previous === 'video' || previous === 'document';
+      const hadMedia = previous === 'image' || previous === 'video' || previous === 'document';
       const wantsMedia = value === 'image' || value === 'video' || value === 'document';
       if (!wantsMedia || (hadMedia && value !== previous)) {
         clearMedia();
@@ -135,31 +133,39 @@ export function TemplateCreateForm({
     [bodySelection.end, bodySelection.start, form],
   );
 
+  const updateBodySelection = (target: HTMLTextAreaElement) => {
+    setBodySelection({
+      start: target.selectionStart ?? 0,
+      end: target.selectionEnd ?? 0,
+    });
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>{isEditMode ? 'Template metadata' : 'Template details'}</CardTitle>
-                <CardDescription>
-                  {isEditMode
-                    ? 'Name, language, and category are fixed after creation.'
-                    : 'Name and category are submitted to Meta for approval.'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="space-y-5">
+            <FormSectionCard
+              title={isEditMode ? 'Template metadata' : 'Template details'}
+              description={
+                isEditMode
+                  ? 'Name, language, and category are fixed after creation.'
+                  : 'Name and category are submitted to Meta for approval.'
+              }
+            >
+              <div className="grid gap-4 sm:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="name"
                   render={({ field }) => (
                     <FormItem className="sm:col-span-2">
-                      <FormLabel>Template name</FormLabel>
+                      <FormLabel className="font-medium text-foreground">Template name</FormLabel>
                       <FormControl>
                         <Input placeholder="june_sales_1" disabled={isEditMode} {...field} />
                       </FormControl>
-                      <FormDescription>Lowercase, underscores only — used in send API.</FormDescription>
+                      <FormDescription>
+                        Lowercase, underscores only — used in the send API.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -169,7 +175,7 @@ export function TemplateCreateForm({
                   name="language"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Language</FormLabel>
+                      <FormLabel className="font-medium text-foreground">Language</FormLabel>
                       <FormControl>
                         <Input placeholder="en" disabled={isEditMode} {...field} />
                       </FormControl>
@@ -182,7 +188,7 @@ export function TemplateCreateForm({
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Category</FormLabel>
+                      <FormLabel className="font-medium text-foreground">Category</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
@@ -205,24 +211,24 @@ export function TemplateCreateForm({
                     </FormItem>
                   )}
                 />
-              </CardContent>
-            </Card>
+              </div>
+            </FormSectionCard>
 
             {!isCarousel ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Header</CardTitle>
-                  <CardDescription>Optional text, image, video, or document header.</CardDescription>
-                </CardHeader>
-              <CardContent className="space-y-4">
+              <FormSectionCard
+                title="Header"
+                description="Optional text, image, video, or document header."
+              >
                 <FormField
                   control={form.control}
                   name="headerType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Header type</FormLabel>
+                      <FormLabel className="font-medium text-foreground">Header type</FormLabel>
                       <Select
-                        onValueChange={(value) => handleHeaderTypeChange(value as TemplateHeaderType)}
+                        onValueChange={(value) =>
+                          handleHeaderTypeChange(value as TemplateHeaderType)
+                        }
                         value={field.value}
                       >
                         <FormControl>
@@ -249,7 +255,7 @@ export function TemplateCreateForm({
                     name="headerText"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Header text</FormLabel>
+                        <FormLabel className="font-medium text-foreground">Header text</FormLabel>
                         <FormControl>
                           <Input placeholder="{{month}} Sale Offer" {...field} />
                         </FormControl>
@@ -268,7 +274,7 @@ export function TemplateCreateForm({
                     name="headerMediaHandle"
                     render={() => (
                       <FormItem>
-                        <FormLabel>
+                        <FormLabel className="font-medium text-foreground">
                           {headerType === 'image'
                             ? 'Header image'
                             : headerType === 'video'
@@ -300,92 +306,66 @@ export function TemplateCreateForm({
                     )}
                   />
                 ) : null}
-              </CardContent>
-            </Card>
+              </FormSectionCard>
             ) : null}
 
-            <Card>
-              <CardHeader>
-                <CardTitle>{isCarousel ? 'Intro message' : 'Body'}</CardTitle>
-                <CardDescription>
-                  {isCarousel
-                    ? 'Required intro text shown above the carousel (max 1024 characters).'
-                    : 'Required message body (max 1024 characters).'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="bodyText"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Body text</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          rows={5}
-                          placeholder="Hi {{name}}, shop before the sale ends this month."
-                          {...field}
-                          onSelect={(event) => {
-                            const target = event.target as HTMLTextAreaElement;
-                            setBodySelection({
-                              start: target.selectionStart ?? 0,
-                              end: target.selectionEnd ?? 0,
-                            });
-                          }}
-                          onClick={(event) => {
-                            const target = event.target as HTMLTextAreaElement;
-                            setBodySelection({
-                              start: target.selectionStart ?? 0,
-                              end: target.selectionEnd ?? 0,
-                            });
-                          }}
-                          onKeyUp={(event) => {
-                            const target = event.currentTarget;
-                            setBodySelection({
-                              start: target.selectionStart ?? 0,
-                              end: target.selectionEnd ?? 0,
-                            });
-                          }}
-                        />
-                      </FormControl>
-                      <FormDescription>{bodyText.length}/1024</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <AddVariableButton onInsert={handleInsertVariable} />
-                {!isCarousel ? (
-                  <VariableFieldsPanel form={form} headerText={headerText} bodyText={bodyText} />
-                ) : null}
-              </CardContent>
-            </Card>
+            <FormSectionCard
+              title={isCarousel ? 'Intro message' : 'Body'}
+              description={
+                isCarousel
+                  ? 'Required intro text shown above the carousel (max 1024 characters).'
+                  : 'Required message body (max 1024 characters).'
+              }
+            >
+              <FormField
+                control={form.control}
+                name="bodyText"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-medium text-foreground">Body text</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        rows={6}
+                        className="min-h-[140px] resize-y"
+                        placeholder="Hi {{name}}, shop before the sale ends this month."
+                        {...field}
+                        onSelect={(event) => updateBodySelection(event.target as HTMLTextAreaElement)}
+                        onClick={(event) => updateBodySelection(event.target as HTMLTextAreaElement)}
+                        onKeyUp={(event) => updateBodySelection(event.currentTarget)}
+                      />
+                    </FormControl>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <AddVariableButton onInsert={handleInsertVariable} />
+                      <FormDescription className="m-0">{bodyText.length}/1024</FormDescription>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {!isCarousel ? (
+                <VariableFieldsPanel form={form} headerText={headerText} bodyText={bodyText} />
+              ) : null}
+            </FormSectionCard>
 
             {isCarousel ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Carousel cards</CardTitle>
-                  <CardDescription>
-                    Each card includes an image, body text, and optional URL button.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <CarouselCardsPanel
-                    form={form}
-                    whatsAppAccountId={whatsAppAccountId}
-                    disabled={isSubmitting}
-                  />
-                </CardContent>
-              </Card>
+              <FormSectionCard
+                title="Carousel cards"
+                description="Each card includes an image, body text, and optional URL button."
+              >
+                <CarouselCardsPanel
+                  form={form}
+                  whatsAppAccountId={whatsAppAccountId}
+                  disabled={isSubmitting}
+                />
+              </FormSectionCard>
             ) : null}
 
             {!isCarousel ? (
               <>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                    <div>
-                      <CardTitle>Footer</CardTitle>
-                      <CardDescription>Optional footer line (max 60 characters).</CardDescription>
-                    </div>
+                <FormSectionCard
+                  title="Footer"
+                  description="Optional footer line (max 60 characters)."
+                  action={
                     <FormField
                       control={form.control}
                       name="enableFooter"
@@ -397,43 +377,41 @@ export function TemplateCreateForm({
                         </FormItem>
                       )}
                     />
-                  </CardHeader>
+                  }
+                >
                   {enableFooter ? (
-                    <CardContent>
-                      <FormField
-                        control={form.control}
-                        name="footerText"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Footer text</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Support Team" {...field} />
-                            </FormControl>
-                            <FormDescription>{(field.value ?? '').length}/60</FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </CardContent>
-                  ) : null}
-                </Card>
+                    <FormField
+                      control={form.control}
+                      name="footerText"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="font-medium text-foreground">Footer text</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Support Team" {...field} />
+                          </FormControl>
+                          <FormDescription>{(field.value ?? '').length}/60</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Enable the toggle to add a footer line to your template.
+                    </p>
+                  )}
+                </FormSectionCard>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Buttons</CardTitle>
-                    <CardDescription>
-                      Quick replies or call-to-action buttons (Meta allows one group per template).
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <TemplateButtonsPanel form={form} />
-                  </CardContent>
-                </Card>
+                <FormSectionCard
+                  title="Buttons"
+                  description="Quick replies or call-to-action buttons (Meta allows one group per template)."
+                >
+                  <TemplateButtonsPanel form={form} />
+                </FormSectionCard>
               </>
             ) : null}
           </div>
 
-          <div className="lg:sticky lg:top-24 lg:self-start">
+          <div className="xl:sticky xl:top-20 xl:self-start">
             <TemplatePreviewPanel
               templateKind={preview.templateKind}
               headerType={preview.headerType}
@@ -447,12 +425,21 @@ export function TemplateCreateForm({
           </div>
         </div>
 
-        <div className="flex flex-wrap justify-end gap-2 border-t pt-4">
-          <Button type="button" variant="outline" onClick={onCancel}>
+        <div className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-end gap-2 border-t bg-background/95 px-4 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/90 sm:-mx-6 sm:px-6">
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isEditMode ? 'Submit update for approval' : 'Submit for approval'}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Submitting…
+              </>
+            ) : isEditMode ? (
+              'Submit update for approval'
+            ) : (
+              'Submit for approval'
+            )}
           </Button>
         </div>
       </form>

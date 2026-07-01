@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { InlineError } from '@/components/shared/InlineError';
-import { StatusBadge } from '@/components/shared/StatusBadge';
+import { TemplateStatusBadge } from '@/features/templates/components/TemplateStatusBadge';
 import { formatDateTime } from '@/lib/format';
 import { TemplatePreviewPanel } from '@/features/templates/components/TemplatePreviewPanel';
 import type { TemplateDetailDto } from '@/features/templates/types';
@@ -56,7 +56,7 @@ export function TemplateDetailDialog({
         ) : data ? (
           <div className="space-y-4">
             <div className="flex flex-wrap gap-2">
-              <StatusBadge status={data.metaStatus} />
+              <TemplateStatusBadge status={data.metaStatus} />
               <span className="rounded-md bg-muted px-2 py-1 text-xs">{data.category}</span>
               <span className="rounded-md bg-muted px-2 py-1 text-xs">{data.language}</span>
             </div>
@@ -85,7 +85,7 @@ export function TemplateDetailDialog({
               </div>
               <div>
                 <dt className="text-muted-foreground">Created by</dt>
-                <dd>{data.createdByName ?? 'Synced from Meta'}</dd>
+                <dd>{data.createdByName ?? 'System'}</dd>
               </div>
               <div>
                 <dt className="text-muted-foreground">Last updated</dt>

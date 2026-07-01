@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Plus } from 'lucide-react';
 import { EmptyState } from '@/components/shared/EmptyState';
-import { FilterPanel, ListPageShell } from '@/components/shared/ListPageLayout';
-import { PageActions } from '@/components/shared/PageActions';
+import { ListPageShell } from '@/components/shared/ListPageLayout';
 import { QueryErrorPanel } from '@/components/shared/QueryErrorPanel';
 import { TablePagination } from '@/components/shared/TablePagination';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
@@ -24,8 +23,7 @@ import { TemplateCreateWizardDialog } from '@/features/templates/components/Temp
 import { TemplateDetailDialog } from '@/features/templates/components/TemplateDetailDialog';
 import { TemplatesCardGrid } from '@/features/templates/components/TemplatesCardGrid';
 import { TemplatesCardGridSkeleton } from '@/features/templates/components/TemplatesCardGridSkeleton';
-import { TemplatesFilters } from '@/features/templates/components/TemplatesFilters';
-import { useSyncTemplates } from '@/features/templates/hooks/useSyncTemplates';
+import { TemplatesPageControls } from '@/features/templates/components/TemplatesPageControls';
 import { templateKeys } from '@/features/templates/queryKeys';
 import type { TemplateCreateWizardValues } from '@/features/templates/schemas';
 import type { MetaTemplateStatus, TemplateCategory } from '@/features/templates/types';
@@ -46,13 +44,29 @@ export function TemplatesPage() {
   const debouncedSearch = useDebouncedValue(searchInput);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
-  const syncMutation = useSyncTemplates();
-  const { defaultAccountId } = useWhatsAppAccounts();
+  const { connectedAccounts, defaultAccountId } = useWhatsAppAccounts();
+  const [selectedAccountId, setSelectedAccountId] = useState<string | undefined>();
 
   useEffect(() => {
     resetPage();
     setParams({ search: debouncedSearch || undefined });
   }, [debouncedSearch, resetPage, setParams]);
+
+  const connectedAccountIds = useMemo(
+    () => connectedAccounts.map((account) => account.id),
+    [connectedAccounts],
+  );
+
+  const activeAccountId =
+    selectedAccountId ??
+    defaultAccountId ??
+    (useMockData ? DEV_MOCK_WHATSAPP_ACCOUNT_ID : undefined);
+
+  useEffect(() => {
+    if (!selectedAccountId && defaultAccountId) {
+      setSelectedAccountId(defaultAccountId);
+    }
+  }, [defaultAccountId, selectedAccountId]);
 
   const queryParams = useMemo(
     () => ({
@@ -85,8 +99,9 @@ export function TemplatesPage() {
       : undefined
     : detailQuery.data;
 
-  const accountId = defaultAccountId ?? (useMockData ? DEV_MOCK_WHATSAPP_ACCOUNT_ID : undefined);
-  const showSync = canSyncTemplates(user) && accountId;
+  const canManage = canSyncTemplates(user);
+  const hasConnectedAccounts = connectedAccountIds.length > 0;
+  const showActions = canManage && hasConnectedAccounts;
 
   const handleWizardContinue = (values: TemplateCreateWizardValues) => {
     navigate('/templates/new', { state: { initialValues: values } });
@@ -94,28 +109,17 @@ export function TemplatesPage() {
 
   return (
     <ListPageShell>
-      {showSync ? (
-        <PageActions>
-          <Button onClick={() => setWizardOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Create template
-          </Button>
-          <Button
-            variant="outline"
-            disabled={syncMutation.isPending}
-            onClick={() => syncMutation.mutate(accountId)}
-          >
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Sync all
-          </Button>
-        </PageActions>
-      ) : null}
-
-      <FilterPanel>
-        <TemplatesFilters
+      {canManage ? (
+        <TemplatesPageControls
+          accounts={connectedAccounts}
+          selectedAccountId={activeAccountId}
+          onSelectedAccountIdChange={setSelectedAccountId}
+          canManage={canManage}
+          onCreate={() => setWizardOpen(true)}
           search={searchInput}
           metaStatus={params.metaStatus}
           category={params.category}
+          totalTemplates={listData?.meta.total}
           onSearchChange={setSearchInput}
           onMetaStatusChange={(metaStatus) => {
             resetPage();
@@ -126,7 +130,7 @@ export function TemplatesPage() {
             setParams({ category });
           }}
         />
-      </FilterPanel>
+      ) : null}
 
       {!useMockData && templatesQuery.isLoading ? (
         <TemplatesCardGridSkeleton />
@@ -148,16 +152,16 @@ export function TemplatesPage() {
       ) : (
         <EmptyState
           title="No templates yet"
-          description="Connect a WhatsApp account and sync templates from Meta to get started."
+          description={
+            hasConnectedAccounts
+              ? 'Create a template to submit it to Meta for approval. Status updates arrive via webhook.'
+              : 'Connect a WhatsApp account, then create templates from this page.'
+          }
           action={
-            showSync ? (
-              <Button
-                variant="outline"
-                disabled={syncMutation.isPending}
-                onClick={() => syncMutation.mutate(accountId)}
-              >
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Sync all
+            showActions ? (
+              <Button onClick={() => setWizardOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Create template
               </Button>
             ) : undefined
           }
@@ -171,7 +175,7 @@ export function TemplatesPage() {
           isLoading={!useMockData && detailQuery.isLoading}
           isError={!useMockData && detailQuery.isError}
           error={detailQuery.error}
-          canManageTemplates={Boolean(showSync)}
+          canManageTemplates={Boolean(showActions)}
           onClose={() => setSelectedId(null)}
           onEdit={(id) => {
             setSelectedId(null);

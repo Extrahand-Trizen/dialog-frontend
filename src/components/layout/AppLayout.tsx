@@ -56,12 +56,12 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <SidebarProvider defaultOpen>
       <AppSidebar />
-      <SidebarInset className="bg-muted/30">
-        <div className="sticky top-0 z-20 border-b bg-background shadow-sm">
+      <SidebarInset className="border-l border-border/50 bg-background">
+        <div className="sticky top-0 z-20 border-b border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
           <DevMockAuthBanner />
           <TopNav pageTitle={page.title} description={page.description} />
         </div>
-        <div className="flex min-w-0 flex-1 flex-col p-3 sm:p-6">
+        <div className="flex min-w-0 flex-1 flex-col p-4 sm:p-6">
           <div className="mx-auto w-full min-w-0 max-w-7xl flex-1">{children}</div>
         </div>
       </SidebarInset>

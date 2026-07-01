@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { OverviewPageHeader } from '@/features/dashboard/components/OverviewPageHeader';
 import { OverviewStatsCards } from '@/features/dashboard/components/OverviewStatsCards';
-import { PeriodSelector } from '@/features/dashboard/components/PeriodSelector';
 import { RecentActivityFeed } from '@/features/dashboard/components/RecentActivityFeed';
 import { RECENT_ACTIVITY_LIMIT } from '@/features/dashboard/constants';
 import { getOverview } from '@/features/dashboard/api/getOverview';
@@ -36,9 +36,11 @@ export function OverviewPage() {
 
   return (
     <ListPageShell>
-      <div className="flex justify-end">
-        <PeriodSelector value={period} onChange={setPeriod} />
-      </div>
+      <OverviewPageHeader
+        period={period}
+        onPeriodChange={setPeriod}
+        periodStart={overviewData?.periodStart}
+      />
 
       <OverviewStatsCards
         data={overviewData}
@@ -47,6 +49,7 @@ export function OverviewPage() {
         error={overviewQuery.error}
         onRetry={() => void overviewQuery.refetch()}
       />
+
       <RecentActivityFeed
         items={activityData}
         isLoading={!useMockData && activityQuery.isLoading}
