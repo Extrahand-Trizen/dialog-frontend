@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { resolveTemplateMediaUrl } from '@/features/templates/utils/resolveTemplateMediaUrl';
 import { cn } from '@/lib/utils';
 
 type TemplateCarouselCardImageProps = {
@@ -13,7 +14,11 @@ export function TemplateCarouselCardImage({
   variant = 'thumb',
 }: TemplateCarouselCardImageProps) {
   const [imageFailed, setImageFailed] = useState(false);
-  const src = imageMediaUrl?.trim();
+  const src = resolveTemplateMediaUrl(imageMediaUrl);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [src]);
 
   if (!src || imageFailed) {
     return null;
@@ -21,6 +26,7 @@ export function TemplateCarouselCardImage({
 
   return (
     <img
+      key={src}
       src={src}
       alt=""
       className={cn(

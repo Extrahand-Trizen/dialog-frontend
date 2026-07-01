@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Plus, Search } from 'lucide-react';
+import { Plus, RefreshCw, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -21,12 +21,15 @@ import {
 } from '@/features/templates/types';
 import { getTemplateStatusLabel } from '@/features/templates/utils/templateStatusLabels';
 import type { WhatsAppAccountDto } from '@/features/whatsapp/types';
+import { cn } from '@/lib/utils';
 
 type TemplatesPageControlsProps = {
   accounts: WhatsAppAccountDto[];
   selectedAccountId?: string;
   onSelectedAccountIdChange?: (accountId: string) => void;
   canManage: boolean;
+  isSyncing: boolean;
+  onSyncAll: () => void;
   onCreate: () => void;
   search: string;
   metaStatus: MetaTemplateStatus | undefined;
@@ -42,6 +45,8 @@ export function TemplatesPageControls({
   selectedAccountId,
   onSelectedAccountIdChange,
   canManage,
+  isSyncing,
+  onSyncAll,
   onCreate,
   search,
   metaStatus,
@@ -93,10 +98,20 @@ export function TemplatesPageControls({
                 </SelectContent>
               </Select>
             ) : null}
+            {hasAccounts ? (
+              <p className="text-xs text-muted-foreground">
+                Approval status updates automatically via Meta webhook. Sync all imports templates
+                and content from Meta — it does not change approval status.
+              </p>
+            ) : null}
           </div>
 
           {canManage && hasAccounts ? (
             <div className="flex shrink-0 flex-wrap gap-2">
+              <Button variant="outline" disabled={isSyncing} onClick={onSyncAll}>
+                <RefreshCw className={cn('mr-2 h-4 w-4', isSyncing && 'animate-spin')} />
+                Sync all
+              </Button>
               <Button onClick={onCreate}>
                 <Plus className="mr-2 h-4 w-4" />
                 Create template

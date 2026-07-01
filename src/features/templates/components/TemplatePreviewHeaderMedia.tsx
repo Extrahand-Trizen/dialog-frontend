@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FileText, Play } from 'lucide-react';
+import { resolveTemplateMediaUrl } from '@/features/templates/utils/resolveTemplateMediaUrl';
 import { cn } from '@/lib/utils';
 
 type TemplatePreviewHeaderMediaProps = {
@@ -22,8 +23,12 @@ export function TemplatePreviewHeaderMedia({
   className,
 }: TemplatePreviewHeaderMediaProps) {
   const [imageFailed, setImageFailed] = useState(false);
-  const resolvedMediaUrl = mediaUrl?.trim();
+  const resolvedMediaUrl = resolveTemplateMediaUrl(mediaUrl);
   const imageClass = cn(VARIANT_CLASS[variant], className);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [resolvedMediaUrl]);
 
   if (headerType === 'document') {
     return (
@@ -52,6 +57,7 @@ export function TemplatePreviewHeaderMedia({
     return (
       <div className="relative">
         <img
+          key={resolvedMediaUrl}
           src={resolvedMediaUrl}
           alt=""
           className={imageClass}
@@ -78,6 +84,7 @@ export function TemplatePreviewHeaderMedia({
 
   return (
     <img
+      key={resolvedMediaUrl}
       src={resolvedMediaUrl}
       alt=""
       className={imageClass}

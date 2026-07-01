@@ -2,6 +2,7 @@ import { Copy, ExternalLink, Eye, Phone, Reply } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { TemplatePreviewHeaderMedia } from '@/features/templates/components/TemplatePreviewHeaderMedia';
 import { TemplateCarouselCardImage } from '@/features/templates/components/TemplateCarouselCardImage';
+import { getTemplateCarouselPreviewUrl, getTemplateHeaderPreviewUrl } from '@/features/templates/utils/resolveTemplateMediaUrl';
 import type { TemplateHeaderType, TemplatePreviewDto, TemplateFormat } from '@/features/templates/types';
 
 type TemplatePreviewPanelProps = {
@@ -13,6 +14,7 @@ type TemplatePreviewPanelProps = {
   buttons?: TemplatePreviewDto['buttons'];
   mediaPreviewUrl?: string;
   headerMediaUrl?: string;
+  headerMediaHandle?: string;
   carouselCards?: TemplatePreviewDto['carouselCards'];
 };
 
@@ -25,10 +27,14 @@ export function TemplatePreviewPanel({
   buttons = [],
   mediaPreviewUrl,
   headerMediaUrl,
+  headerMediaHandle,
   carouselCards = [],
 }: TemplatePreviewPanelProps) {
   const resolvedHeaderType = headerType === 'none' ? 'none' : headerType;
   const isCarousel = templateKind === 'carousel';
+  const resolvedHeaderMediaUrl =
+    mediaPreviewUrl ??
+    getTemplateHeaderPreviewUrl({ headerMediaUrl, headerMediaHandle });
 
   return (
     <Card className="shadow-sm">
@@ -58,7 +64,7 @@ export function TemplatePreviewPanel({
                 resolvedHeaderType === 'document' ? (
                   <TemplatePreviewHeaderMedia
                     headerType={resolvedHeaderType}
-                    mediaUrl={mediaPreviewUrl ?? headerMediaUrl}
+                    mediaUrl={resolvedHeaderMediaUrl}
                     variant="full"
                   />
                 ) : null}
@@ -105,7 +111,10 @@ export function TemplatePreviewPanel({
                         className="w-44 shrink-0 overflow-hidden rounded-md border bg-background"
                       >
                         <TemplateCarouselCardImage
-                          imageMediaUrl={card.imageMediaUrl}
+                          imageMediaUrl={getTemplateCarouselPreviewUrl({
+                            imageMediaUrl: card.imageMediaUrl,
+                            imageHandle: card.imageHandle,
+                          })}
                           variant="full"
                         />
                         <div className="p-2">

@@ -67,6 +67,7 @@ export function TemplateDetailDialog({
                 headerType={data.preview.headerType}
                 headerText={data.preview.headerText}
                 headerMediaUrl={data.preview.headerMediaUrl}
+                headerMediaHandle={data.preview.headerMediaHandle}
                 bodyText={data.preview.bodyText}
                 footerText={data.preview.footerText}
                 buttons={data.preview.buttons}

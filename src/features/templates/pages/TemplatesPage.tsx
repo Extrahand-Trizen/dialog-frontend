@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { Plus, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { ListPageShell } from '@/components/shared/ListPageLayout';
@@ -24,6 +24,7 @@ import { TemplateDetailDialog } from '@/features/templates/components/TemplateDe
 import { TemplatesCardGrid } from '@/features/templates/components/TemplatesCardGrid';
 import { TemplatesCardGridSkeleton } from '@/features/templates/components/TemplatesCardGridSkeleton';
 import { TemplatesPageControls } from '@/features/templates/components/TemplatesPageControls';
+import { useSyncAllTemplates } from '@/features/templates/hooks/useSyncAllTemplates';
 import { templateKeys } from '@/features/templates/queryKeys';
 import type { TemplateCreateWizardValues } from '@/features/templates/schemas';
 import type { MetaTemplateStatus, TemplateCategory } from '@/features/templates/types';
@@ -44,6 +45,7 @@ export function TemplatesPage() {
   const debouncedSearch = useDebouncedValue(searchInput);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const syncAllMutation = useSyncAllTemplates();
   const { connectedAccounts, defaultAccountId } = useWhatsAppAccounts();
   const [selectedAccountId, setSelectedAccountId] = useState<string | undefined>();
 
@@ -103,6 +105,11 @@ export function TemplatesPage() {
   const hasConnectedAccounts = connectedAccountIds.length > 0;
   const showActions = canManage && hasConnectedAccounts;
 
+  const handleSyncAll = () => {
+    if (connectedAccountIds.length === 0) return;
+    syncAllMutation.mutate(connectedAccountIds);
+  };
+
   const handleWizardContinue = (values: TemplateCreateWizardValues) => {
     navigate('/templates/new', { state: { initialValues: values } });
   };
@@ -115,6 +122,8 @@ export function TemplatesPage() {
           selectedAccountId={activeAccountId}
           onSelectedAccountIdChange={setSelectedAccountId}
           canManage={canManage}
+          isSyncing={syncAllMutation.isPending}
+          onSyncAll={handleSyncAll}
           onCreate={() => setWizardOpen(true)}
           search={searchInput}
           metaStatus={params.metaStatus}
@@ -154,15 +163,25 @@ export function TemplatesPage() {
           title="No templates yet"
           description={
             hasConnectedAccounts
-              ? 'Create a template to submit it to Meta for approval. Status updates arrive via webhook.'
-              : 'Connect a WhatsApp account, then create templates from this page.'
+              ? 'Create a template here, or use Sync all to import existing templates from Meta. Approval status updates via webhook.'
+              : 'Connect a WhatsApp account, then create or import templates.'
           }
           action={
             showActions ? (
-              <Button onClick={() => setWizardOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Create template
-              </Button>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button
+                  variant="outline"
+                  disabled={syncAllMutation.isPending}
+                  onClick={handleSyncAll}
+                >
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Sync all
+                </Button>
+                <Button onClick={() => setWizardOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create template
+                </Button>
+              </div>
             ) : undefined
           }
         />

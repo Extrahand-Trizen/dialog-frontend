@@ -1,11 +1,13 @@
 import type { TemplateSummaryPreviewDto } from '@/features/templates/types';
 import { TemplatePreviewHeaderMedia } from '@/features/templates/components/TemplatePreviewHeaderMedia';
 import { TemplateCarouselCardImage } from '@/features/templates/components/TemplateCarouselCardImage';
+import { getTemplateCarouselPreviewUrl, getTemplateHeaderPreviewUrl } from '@/features/templates/utils/resolveTemplateMediaUrl';
 
 type TemplateMiniPreviewProps = {
   headerType: TemplateSummaryPreviewDto['headerType'];
   headerText?: string;
   headerMediaUrl?: string;
+  headerMediaHandle?: string;
   bodyText: string;
   footerText?: string;
   buttons?: TemplateSummaryPreviewDto['buttons'];
@@ -19,6 +21,7 @@ export function TemplateMiniPreview({
   headerType,
   headerText,
   headerMediaUrl,
+  headerMediaHandle,
   bodyText,
   footerText,
   buttons = [],
@@ -27,6 +30,10 @@ export function TemplateMiniPreview({
   compact = false,
 }: TemplateMiniPreviewProps) {
   const isCarousel = templateKind === 'carousel';
+  const resolvedHeaderMediaUrl = getTemplateHeaderPreviewUrl({
+    headerMediaUrl,
+    headerMediaHandle,
+  });
 
   return (
     <div
@@ -48,7 +55,7 @@ export function TemplateMiniPreview({
             {headerType === 'image' || headerType === 'video' || headerType === 'document' ? (
               <TemplatePreviewHeaderMedia
                 headerType={headerType}
-                mediaUrl={headerMediaUrl}
+                mediaUrl={resolvedHeaderMediaUrl}
                 variant="full"
               />
             ) : null}
@@ -97,7 +104,10 @@ export function TemplateMiniPreview({
                     }
                   >
                     <TemplateCarouselCardImage
-                      imageMediaUrl={card.imageMediaUrl}
+                      imageMediaUrl={getTemplateCarouselPreviewUrl({
+                        imageMediaUrl: card.imageMediaUrl,
+                        imageHandle: card.imageHandle,
+                      })}
                       variant="full"
                     />
                     <p

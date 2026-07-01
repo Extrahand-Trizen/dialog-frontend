@@ -35,6 +35,7 @@ export const TemplateCard = memo(function TemplateCard({ template, onSelect }: T
           headerType={preview?.headerType ?? 'none'}
           headerText={preview?.headerText}
           headerMediaUrl={preview?.headerMediaUrl}
+          headerMediaHandle={preview?.headerMediaHandle}
           bodyText={preview?.bodyText ?? 'No preview available'}
           footerText={preview?.footerText}
           buttons={preview?.buttons ?? []}
