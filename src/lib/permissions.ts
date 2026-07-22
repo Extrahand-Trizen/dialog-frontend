@@ -17,6 +17,10 @@ export function canManageNotificationRules(user: AuthUser | undefined): boolean 
   return isAdmin(user);
 }
 
+export function canSendMessages(user: AuthUser | undefined): boolean {
+  return isAdmin(user);
+}
+
 export function canViewAdminNav(user: AuthUser | undefined): boolean {
   return isAdmin(user);
 }
