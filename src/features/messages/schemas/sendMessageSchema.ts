@@ -13,7 +13,7 @@ export const sendMessageFormSchema = z.object({
     }, 'Enter a valid phone number with country code (e.g. 919876543210)'),
   templateId: z.string().uuid('Select an approved template'),
   phoneNumberId: z.string(),
-  variables: z.record(z.string(), z.string()).default({}),
+  variables: z.record(z.string(), z.string()),
   /** Dynamic URL button suffix (task id) when template has …/{{1}} links. */
   buttonUrlSuffix: z.string().max(200).optional(),
 });
