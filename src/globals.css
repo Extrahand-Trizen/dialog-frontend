@@ -75,3 +75,82 @@
     @apply bg-background font-sans text-[15px] leading-relaxed text-foreground antialiased;
   }
 }
+
+/* Landing page motion — scoped so the rest of the app is unchanged */
+@layer utilities {
+  .landing-fade-up {
+    animation: landing-fade-up 0.7s ease-out both;
+  }
+
+  .landing-fade-up-delay-1 {
+    animation-delay: 0.08s;
+  }
+
+  .landing-fade-up-delay-2 {
+    animation-delay: 0.16s;
+  }
+
+  .landing-fade-up-delay-3 {
+    animation-delay: 0.24s;
+  }
+
+  .landing-chat-float {
+    animation: landing-chat-float 7s ease-in-out infinite;
+  }
+
+  .landing-msg {
+    animation: landing-msg-in 0.55s ease-out both;
+  }
+
+  .landing-msg-1 {
+    animation-delay: 0.35s;
+  }
+
+  .landing-msg-2 {
+    animation-delay: 0.55s;
+  }
+
+  .landing-msg-3 {
+    animation-delay: 0.75s;
+  }
+
+  .landing-cta-hover {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .landing-cta-hover:hover {
+    transform: translateY(-1px);
+  }
+}
+
+@keyframes landing-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landing-chat-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes landing-msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

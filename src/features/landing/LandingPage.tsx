@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
-import {
-  ArrowRight,
-  MessageSquare,
-  Sparkles,
-} from 'lucide-react';
+import { ArrowRight, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { APP_NAME, APP_SHORT_DESCRIPTION, APP_TAGLINE } from '@/constants/branding';
+import {
+  APP_HERO_HEADLINE,
+  APP_NAME,
+  APP_SHORT_DESCRIPTION,
+} from '@/constants/branding';
 import { useAuth } from '@/features/auth/context/AuthProvider';
 import { LANDING_FEATURES, LANDING_STEPS } from '@/features/landing/constants';
 import { LandingHeroPreview } from '@/features/landing/components/LandingHeroPreview';
@@ -16,25 +16,22 @@ export function LandingPage() {
   const primaryCta = isAuthenticated ? 'Open dashboard' : 'Sign in';
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <MessageSquare className="size-4" />
+    <div className="landing min-h-screen bg-background">
+      <header className="sticky top-0 z-30 border-b bg-white">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:h-16 sm:px-6">
+          <Link to="/" className="flex items-center gap-2.5 text-foreground">
+            <div className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <MessageSquare className="size-3.5" />
             </div>
-            <span className="font-semibold tracking-tight">{APP_NAME}</span>
+            <span className="text-sm font-medium tracking-tight">{APP_NAME}</span>
           </Link>
-          <nav className="flex items-center gap-2 sm:gap-3">
-            <Button variant="ghost" size="sm" asChild>
-              <a href="#features">Features</a>
-            </Button>
+          <nav className="flex items-center gap-2">
             {!isLoading && !isAuthenticated ? (
-              <Button variant="outline" size="sm" asChild>
+              <Button variant="ghost" size="sm" asChild>
                 <Link to="/login">Sign in</Link>
               </Button>
             ) : null}
-            <Button size="sm" asChild>
+            <Button size="sm" className="landing-cta-hover" asChild>
               <Link to={dashboardHref}>
                 {primaryCta}
                 <ArrowRight className="ml-1.5 size-4" />
@@ -47,29 +44,26 @@ export function LandingPage() {
       <main>
         <section className="relative overflow-hidden border-b">
           <div
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,hsl(var(--primary)/0.18),transparent)]"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_80%_0%,hsl(var(--primary)/0.12),transparent)]"
             aria-hidden
           />
-          <div className="mx-auto grid max-w-6xl gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:items-center lg:py-24">
-            <div className="relative z-10">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm">
-                <Sparkles className="size-3.5 text-primary" />
-                {APP_TAGLINE}
-              </div>
-              <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-[3.25rem] lg:leading-[1.1]">
-                Run WhatsApp notifications{' '}
-                <span className="text-primary">without the chaos</span>
+          <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-10 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-2 lg:gap-12 lg:py-16">
+            <div className="max-w-xl">
+              <h1 className="landing-fade-up font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl lg:text-5xl lg:leading-[1.1]">
+                {APP_HERO_HEADLINE}
               </h1>
-              <p className="mt-5 max-w-xl text-lg text-muted-foreground">{APP_SHORT_DESCRIPTION}</p>
-              <div className="mt-8 flex flex-wrap items-center gap-3">
-                <Button size="lg" asChild>
+              <p className="landing-fade-up landing-fade-up-delay-1 mt-3 max-w-md text-sm text-muted-foreground sm:text-base">
+                {APP_SHORT_DESCRIPTION}
+              </p>
+              <div className="landing-fade-up landing-fade-up-delay-2 mt-6 flex flex-wrap items-center gap-3">
+                <Button size="lg" className="landing-cta-hover" asChild>
                   <Link to={dashboardHref}>
                     {primaryCta}
                     <ArrowRight className="ml-2 size-4" />
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild>
-                  <a href="#how-it-works">See how it works</a>
+                  <a href="#how-it-works">How it works</a>
                 </Button>
               </div>
             </div>
@@ -77,59 +71,61 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section id="features" className="border-b bg-muted/30 py-16 sm:py-20">
+        <section id="features" className="border-t py-20 sm:py-24">
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
-            <div className="mx-auto max-w-2xl text-center">
-              <h2 className="text-3xl font-semibold tracking-tight">Everything in one console</h2>
-              <p className="mt-3 text-muted-foreground">
-                Templates, sends, integrations, and webhooks — built for teams shipping on WhatsApp
-                Business Platform.
-              </p>
-            </div>
-            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+              Everything in one console
+            </h2>
+            <p className="mt-3 max-w-xl text-muted-foreground">
+              Built for teams shipping on WhatsApp Business Platform.
+            </p>
+            <ul className="mt-14 grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
               {LANDING_FEATURES.map((feature) => (
-                <article
-                  key={feature.title}
-                  className="rounded-xl border bg-card p-6 shadow-sm transition-shadow hover:shadow-md"
-                >
-                  <div className="mb-4 flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <feature.icon className="size-5" />
-                  </div>
-                  <h3 className="font-semibold">{feature.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                <li key={feature.title} className="min-w-0">
+                  <feature.icon className="size-5 text-primary" aria-hidden />
+                  <h3 className="mt-3 text-base font-semibold">{feature.title}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
                     {feature.description}
                   </p>
-                </article>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         </section>
 
-        <section id="how-it-works" className="py-16 sm:py-20">
+        <section id="how-it-works" className="border-t bg-muted/40 py-20 sm:py-24">
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
-            <h2 className="text-center text-3xl font-semibold tracking-tight">How it works</h2>
-            <ol className="mt-12 grid gap-8 md:grid-cols-3">
+            <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+              How it works
+            </h2>
+            <ol className="mt-14 grid gap-10 md:grid-cols-3 md:gap-8">
               {LANDING_STEPS.map((item) => (
-                <li key={item.step} className="relative rounded-xl border bg-card p-6">
-                  <span className="text-3xl font-bold text-primary/30">{item.step}</span>
-                  <h3 className="mt-2 text-lg font-semibold">{item.title}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">{item.body}</p>
+                <li key={item.step} className="min-w-0">
+                  <span className="font-display text-4xl font-semibold text-primary/40">
+                    {item.step}
+                  </span>
+                  <h3 className="mt-3 text-lg font-semibold">{item.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {item.body}
+                  </p>
                 </li>
               ))}
             </ol>
           </div>
         </section>
 
-        <section className="border-t bg-primary py-14 text-primary-foreground sm:py-16">
+        <section className="border-t bg-primary py-16 text-primary-foreground sm:py-20">
           <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
-            <h2 className="text-2xl font-semibold sm:text-3xl">Ready to manage your WhatsApp ops?</h2>
+            <h2 className="font-display text-2xl font-semibold sm:text-3xl">
+              Ready to manage your WhatsApp ops?
+            </h2>
             <p className="mt-3 text-primary-foreground/85">
-              Sign in to sync templates, monitor delivery, and connect your backends.
+              Sync templates, monitor delivery, and connect your backends.
             </p>
             <Button
               size="lg"
               variant="secondary"
-              className="mt-8 bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+              className="landing-cta-hover mt-8 bg-primary-foreground text-primary hover:bg-primary-foreground/90"
               asChild
             >
               <Link to={dashboardHref}>{primaryCta}</Link>
