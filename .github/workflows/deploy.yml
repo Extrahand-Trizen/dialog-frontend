@@ -14,11 +14,16 @@ jobs:
     timeout-minutes: 30
 
     env:
+      # MinIO upload (repository Secrets — never hardcode)
       MINIO_ENDPOINT: ${{ secrets.MINIO_ENDPOINT }}
       MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
       MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
       MINIO_BUCKET: ${{ secrets.MINIO_BUCKET }}
       APP_FOLDER: ${{ secrets.APP_FOLDER }}
+      # Backend API base URL for the Vite build (no trailing slash; include /api/v1).
+      # Prefer a GitHub Variable; Secret also works. Do not commit .env for CI.
+      NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || secrets.NEXT_PUBLIC_API_URL }}
+      VITE_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || secrets.NEXT_PUBLIC_API_URL || vars.VITE_API_URL || secrets.VITE_API_URL }}
 
     steps:
       - name: Checkout
@@ -29,6 +34,16 @@ jobs:
         with:
           node-version: "20"
           cache: npm
+
+      - name: Require API URL for build
+        run: |
+          set -euo pipefail
+          if [ -z "${NEXT_PUBLIC_API_URL:-}" ] && [ -z "${VITE_API_URL:-}" ]; then
+            echo "::error::Set repository Variable NEXT_PUBLIC_API_URL (Settings → Secrets and variables → Actions → Variables)."
+            echo "Example: https://wa-dialog-backend.backend.extrahand.in/api/v1"
+            exit 1
+          fi
+          echo "API URL configured for build (value not printed)."
 
       - name: Install dependencies
         run: npm ci
