@@ -1,0 +1,233 @@
+/**
+ * Upload TrizenDialog frontend static build (`dist/`) to MinIO.
+ *
+ * Target layout:
+ *   bucket: frontend-builds
+ *     └── trizendialog-frontend/
+ *           └── build-001/
+ *                 └── <dist/ files: index.html, assets/, ...>
+ *
+ * Usage:
+ *   npm run build
+ *   node scripts/upload-trizendialog-build-to-minio.mjs
+ *   node scripts/upload-trizendialog-build-to-minio.mjs --version 2
+ *   node scripts/upload-trizendialog-build-to-minio.mjs --version 2 --dry-run
+ *
+ * Credentials: scripts/.env.minio-builds (or process env)
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { Client } from 'minio';
+import dotenv from 'dotenv';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(__dirname, '..');
+
+dotenv.config({ path: path.join(__dirname, '.env.minio-builds') });
+dotenv.config({ path: path.join(ROOT, '.env.minio-builds') });
+
+const BUCKET_NAME = String(process.env.MINIO_BUCKET_NAME || 'frontend-builds').trim();
+const APP_FOLDER = 'trizendialog-frontend';
+const DIST_DIR = path.join(ROOT, 'dist');
+
+function requireEnv(name) {
+  const value = String(process.env[name] ?? '').trim();
+  if (!value) throw new Error(`Missing required env var: ${name}`);
+  return value;
+}
+
+function normalizeEndpoint(raw) {
+  let urlLike = String(raw || '').trim();
+  if (!/^https?:\/\//i.test(urlLike)) urlLike = `https://${urlLike}`;
+  const url = new URL(urlLike);
+  return {
+    endPoint: url.hostname,
+    useSSL: url.protocol === 'https:',
+    port: url.port ? Number(url.port) : url.protocol === 'https:' ? 443 : 80,
+  };
+}
+
+function parseArgs(argv) {
+  const args = { version: 1, dryRun: false };
+  for (let i = 2; i < argv.length; i += 1) {
+    const arg = argv[i];
+    if (arg === '--dry-run') args.dryRun = true;
+    else if (arg === '--version' || arg === '-v') {
+      const next = argv[i + 1];
+      if (!next || next.startsWith('-')) throw new Error('--version requires a number (e.g. 1)');
+      args.version = Number(next);
+      i += 1;
+    }
+  }
+  if (!Number.isInteger(args.version) || args.version < 1) {
+    throw new Error(`Invalid version: ${args.version}. Use a positive integer.`);
+  }
+  return args;
+}
+
+function formatBuildFolderName(version) {
+  return `build-${String(version).padStart(3, '0')}`;
+}
+
+function mimeFor(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  const map = {
+    '.html': 'text/html; charset=utf-8',
+    '.js': 'application/javascript; charset=utf-8',
+    '.mjs': 'application/javascript; charset=utf-8',
+    '.css': 'text/css; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.map': 'application/json; charset=utf-8',
+    '.svg': 'image/svg+xml',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.webp': 'image/webp',
+    '.gif': 'image/gif',
+    '.ico': 'image/x-icon',
+    '.woff': 'font/woff',
+    '.woff2': 'font/woff2',
+    '.txt': 'text/plain; charset=utf-8',
+  };
+  return map[ext] || 'application/octet-stream';
+}
+
+function walkFiles(dir) {
+  const results = [];
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) results.push(...walkFiles(full));
+    else if (entry.isFile()) results.push(full);
+  }
+  return results;
+}
+
+function toPosix(p) {
+  return p.split(path.sep).join('/');
+}
+
+function cacheControlFor(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === '.html' || ext === '.txt') return 'public, max-age=60';
+  return 'public, max-age=31536000, immutable';
+}
+
+async function ensureBucket(client, bucket) {
+  const exists = await client.bucketExists(bucket);
+  if (exists) {
+    console.log(`✅ Bucket already exists: ${bucket}`);
+    return;
+  }
+  console.log(`📁 Creating bucket: ${bucket}`);
+  await client.makeBucket(bucket, String(process.env.MINIO_REGION_NAME || '').trim() || undefined);
+  console.log(`✅ Bucket created: ${bucket}`);
+}
+
+async function putFolderMarker(client, bucket, prefix, dryRun) {
+  const objectName = prefix.endsWith('/') ? prefix : `${prefix}/`;
+  console.log(`📁 Ensuring remote folder marker: ${bucket}/${objectName}`);
+  if (dryRun) {
+    console.log(`   (dry-run) skip putObject for folder marker`);
+    return;
+  }
+  await client.putObject(bucket, objectName, Buffer.alloc(0), 0, {
+    'Content-Type': 'application/x-directory',
+  });
+  console.log(`✅ Remote folder ready: ${objectName}`);
+}
+
+async function main() {
+  const { version, dryRun } = parseArgs(process.argv);
+  const buildFolder = formatBuildFolderName(version);
+  const remoteAppPrefix = APP_FOLDER;
+  const remoteBuildPrefix = `${APP_FOLDER}/${buildFolder}`;
+
+  const endpointRaw = requireEnv('MINIO_SERVER_URL');
+  const { endPoint, useSSL, port } = normalizeEndpoint(endpointRaw);
+  const accessKey = requireEnv('MINIO_ROOT_USER');
+  const secretKey = requireEnv('MINIO_ROOT_PASSWORD');
+  const region = String(process.env.MINIO_REGION_NAME || '').trim() || undefined;
+
+  console.log('══════════════════════════════════════════════════');
+  console.log(' TrizenDialog Frontend → MinIO upload (static dist/)');
+  console.log('══════════════════════════════════════════════════');
+  console.log(`Endpoint:     ${endPoint}:${port} (ssl=${useSSL})`);
+  console.log(`Bucket:       ${BUCKET_NAME}`);
+  console.log(`App folder:   ${remoteAppPrefix}/`);
+  console.log(`Build folder: ${remoteBuildPrefix}/`);
+  console.log(`Source:       ${DIST_DIR}`);
+  console.log(`Mode:         ${dryRun ? 'DRY RUN' : 'UPLOAD'}`);
+  console.log('══════════════════════════════════════════════════\n');
+
+  if (!fs.existsSync(DIST_DIR)) {
+    throw new Error(`Missing Vite build: ${DIST_DIR}. Run "npm run build" first.`);
+  }
+  if (!fs.existsSync(path.join(DIST_DIR, 'index.html'))) {
+    throw new Error(`Missing ${DIST_DIR}/index.html — build may have failed.`);
+  }
+
+  const client = new Client({
+    endPoint,
+    port,
+    useSSL,
+    accessKey,
+    secretKey,
+    region,
+  });
+
+  if (!dryRun) await ensureBucket(client, BUCKET_NAME);
+  else console.log(`📁 (dry-run) would ensure bucket: ${BUCKET_NAME}`);
+
+  console.log('\n📁 Creating remote folder structure...');
+  await putFolderMarker(client, BUCKET_NAME, remoteAppPrefix, dryRun);
+  await putFolderMarker(client, BUCKET_NAME, remoteBuildPrefix, dryRun);
+
+  const files = walkFiles(DIST_DIR);
+  console.log(`\n⬆️  Uploading ${files.length} files into: ${BUCKET_NAME}/${remoteBuildPrefix}/`);
+
+  let uploaded = 0;
+  let failed = 0;
+
+  for (const filePath of files) {
+    const relative = toPosix(path.relative(DIST_DIR, filePath));
+    const objectName = `${remoteBuildPrefix}/${relative}`;
+    const size = fs.statSync(filePath).size;
+
+    try {
+      if (dryRun) {
+        console.log(`   (dry-run) ${objectName} (${size} bytes)`);
+      } else {
+        await client.fPutObject(BUCKET_NAME, objectName, filePath, {
+          'Content-Type': mimeFor(filePath),
+          'Cache-Control': cacheControlFor(filePath),
+        });
+        console.log(`   ✅ ${objectName}`);
+      }
+      uploaded += 1;
+    } catch (err) {
+      failed += 1;
+      console.error(`   ❌ ${objectName}: ${err?.message || err}`);
+    }
+  }
+
+  const serverUrl = String(process.env.MINIO_SERVER_URL || '').replace(/\/+$/, '');
+  console.log('\n══════════════════════════════════════════════════');
+  console.log(' Upload summary');
+  console.log('══════════════════════════════════════════════════');
+  console.log(`Build folder:  ${remoteBuildPrefix}/`);
+  console.log(`Files:         ${uploaded}`);
+  console.log(`Failures:      ${failed}`);
+  if (serverUrl) {
+    console.log(`Open:          ${serverUrl}/${BUCKET_NAME}/${remoteBuildPrefix}/index.html`);
+  }
+  console.log('══════════════════════════════════════════════════');
+
+  if (failed > 0) process.exitCode = 1;
+}
+
+main().catch((err) => {
+  console.error('\nFatal:', err?.message || err);
+  process.exitCode = 1;
+});

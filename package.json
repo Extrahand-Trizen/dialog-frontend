@@ -8,7 +8,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "upload:minio": "node scripts/upload-trizendialog-build-to-minio.mjs",
+    "upload:minio:dry": "node scripts/upload-trizendialog-build-to-minio.mjs --dry-run"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
@@ -70,10 +72,12 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "autoprefixer": "^10.5.0",
+    "dotenv": "^17.4.2",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "minio": "^8.0.7",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",
     "tailwindcss-animate": "^1.0.7",
