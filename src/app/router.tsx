@@ -1,5 +1,10 @@
 import { lazy, Suspense } from 'react';
-import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
+import {
+  createBrowserRouter,
+  createHashRouter,
+  Outlet,
+  RouterProvider,
+} from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { RouteErrorBoundary } from '@/components/shared/RouteErrorBoundary';
@@ -82,7 +87,7 @@ function AuthenticatedLayout() {
   );
 }
 
-export const router = createBrowserRouter([
+const routes = [
   { path: '/', element: withSuspense(<LandingPage />) },
   { path: '/login', element: withSuspense(<LoginPage />) },
   { path: '/privacy', element: withSuspense(<PrivacyPage />) },
@@ -130,7 +135,27 @@ export const router = createBrowserRouter([
     ],
   },
   { path: '*', element: withSuspense(<NotFoundPage />) },
-]);
+];
+
+/**
+ * MinIO / static object hosting serves .../latest/index.html with no SPA fallback.
+ * Browser history paths like /overview would 404 on refresh, and the full object
+ * path never matches app routes (`/`, `/overview`, …) → NotFoundPage.
+ * Hash routing keeps the real file URL and puts routes after `#`.
+ */
+function isStaticObjectHost() {
+  if (typeof window === 'undefined') return false;
+  const host = window.location.hostname;
+  return (
+    host.includes('frontend-builds') ||
+    host.includes('minio') ||
+    window.location.pathname.includes('/frontend-builds/')
+  );
+}
+
+export const router = isStaticObjectHost()
+  ? createHashRouter(routes)
+  : createBrowserRouter(routes);
 
 export function AppRouter() {
   return <RouterProvider router={router} />;

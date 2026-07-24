@@ -1,0 +1,47 @@
+name: Deploy static build to MinIO
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-minio-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      MINIO_ENDPOINT: ${{ secrets.MINIO_ENDPOINT }}
+      MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
+      MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
+      MINIO_BUCKET: ${{ secrets.MINIO_BUCKET }}
+      APP_FOLDER: ${{ secrets.APP_FOLDER }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify dist/ folder
+        run: |
+          set -euo pipefail
+          test -d dist
+          test -f dist/index.html
+          echo "dist/ ready with $(find dist -type f | wc -l) files"
+
+      - name: Upload dist/ to MinIO (latest)
+        run: npm run upload:build

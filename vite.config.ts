@@ -4,6 +4,8 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
+  // Relative asset URLs so MinIO subfolder hosting (.../latest/index.html) works
+  base: './',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
