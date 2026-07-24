@@ -9,8 +9,10 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "upload:build": "node scripts/upload-dialog-frontend-build-to-minio.mjs",
-    "upload:build:dry": "node scripts/upload-dialog-frontend-build-to-minio.mjs --dry-run"
+    "upload:build": "node scripts/upload-trizendialog-build-to-minio.mjs",
+    "upload:build:dry": "node scripts/upload-trizendialog-build-to-minio.mjs --dry-run",
+    "upload:minio": "node scripts/upload-trizendialog-build-to-minio.mjs",
+    "upload:minio:dry": "node scripts/upload-trizendialog-build-to-minio.mjs --dry-run"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

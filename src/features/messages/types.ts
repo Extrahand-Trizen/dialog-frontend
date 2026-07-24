@@ -43,3 +43,20 @@ export type ListMessagesRequest = {
   recipientPhone?: string;
   metaTemplateName?: string;
 };
+
+export type SendTemplateMessageRequest = {
+  template: string;
+  language?: string;
+  to: string;
+  variables?: Record<string, string> | string[];
+  idempotencyKey: string;
+  phoneNumberId?: string;
+};
+
+export type SendTemplateMessageResult = {
+  messageId: string;
+  duplicate: boolean;
+  status: MessageListStatus;
+  idempotencyKey: string;
+  template: string;
+};
