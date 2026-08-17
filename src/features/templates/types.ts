@@ -159,10 +159,54 @@ export type EnqueueTemplateSyncResponse = {
   queued: true;
 };
 
+export type CopyTemplatesRequest = {
+  sourceWhatsAppAccountId: string;
+  targetWhatsAppAccountId: string;
+  templateIds?: string[];
+  copyAll?: boolean;
+};
+
+export type CopyTemplateItemResult = {
+  templateId: string;
+  name: string;
+  status: 'copied' | 'skipped' | 'failed';
+  message?: string;
+};
+
+export type CopyTemplatesResponse = {
+  sourceWhatsAppAccountId: string;
+  targetWhatsAppAccountId: string;
+  copiedCount: number;
+  skippedCount: number;
+  failedCount: number;
+  items: CopyTemplateItemResult[];
+};
+
+export type DeleteTemplatesRequest = {
+  whatsAppAccountId: string;
+  templateIds: string[];
+};
+
+export type DeleteTemplateItemResult = {
+  templateId: string;
+  name: string;
+  status: 'deleted' | 'skipped' | 'failed';
+  message?: string;
+};
+
+export type DeleteTemplatesResponse = {
+  whatsAppAccountId: string;
+  deletedCount: number;
+  skippedCount: number;
+  failedCount: number;
+  items: DeleteTemplateItemResult[];
+};
+
 export type ListTemplatesRequest = {
   page: number;
   limit: number;
   metaStatus?: MetaTemplateStatus;
   category?: TemplateCategory;
   search?: string;
+  whatsAppAccountId?: string;
 };

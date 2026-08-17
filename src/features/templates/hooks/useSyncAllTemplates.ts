@@ -24,10 +24,30 @@ export function useSyncAllTemplates() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (whatsAppAccountIds: string[]) =>
-      Promise.all(
+    mutationFn: async (whatsAppAccountIds: string[]) => {
+      const settled = await Promise.allSettled(
         whatsAppAccountIds.map((whatsAppAccountId) => syncTemplates({ whatsAppAccountId })),
-      ),
+      );
+      const succeeded = settled.flatMap((result) =>
+        result.status === 'fulfilled' ? [result.value] : [],
+      );
+      const failedCount = settled.length - succeeded.length;
+
+      if (succeeded.length === 0) {
+        const firstError = settled.find((result) => result.status === 'rejected');
+        throw firstError && firstError.status === 'rejected'
+          ? firstError.reason
+          : new Error('Template sync failed');
+      }
+
+      if (failedCount > 0) {
+        toast.error('Some WhatsApp accounts failed to sync', {
+          description: `${succeeded.length} of ${settled.length} accounts imported. Try Sync all again.`,
+        });
+      }
+
+      return succeeded;
+    },
     onSuccess: async (results) => {
       toast.success('Templates imported', {
         description: formatSyncSummary(results),

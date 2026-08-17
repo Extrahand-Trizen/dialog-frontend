@@ -1,4 +1,4 @@
-import { Pencil } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -24,6 +24,7 @@ type TemplateDetailDialogProps = {
   canManageTemplates: boolean;
   onClose: () => void;
   onEdit?: (templateId: string) => void;
+  onDelete?: (templateId: string) => void;
 };
 
 export function TemplateDetailDialog({
@@ -35,12 +36,14 @@ export function TemplateDetailDialog({
   canManageTemplates,
   onClose,
   onEdit,
+  onDelete,
 }: TemplateDetailDialogProps) {
   const showEdit =
     canManageTemplates &&
     data &&
     canEditTemplate(data.metaStatus, data.metaTemplateId) &&
     onEdit;
+  const showDelete = canManageTemplates && data && onDelete;
 
   return (
     <Dialog open={!!templateId} onOpenChange={(open) => !open && onClose()}>
@@ -109,12 +112,24 @@ export function TemplateDetailDialog({
               </details>
             ) : null}
 
-            {showEdit ? (
+            {showEdit || showDelete ? (
               <DialogFooter className="sm:justify-start">
-                <Button type="button" onClick={() => onEdit(data.id)}>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  Edit template
-                </Button>
+                {showEdit ? (
+                  <Button type="button" onClick={() => onEdit(data.id)}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Edit template
+                  </Button>
+                ) : null}
+                {showDelete ? (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={() => onDelete(data.id)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </Button>
+                ) : null}
               </DialogFooter>
             ) : null}
           </div>

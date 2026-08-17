@@ -1,30 +1,55 @@
 import { memo } from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { formatDateTime } from '@/lib/format';
 import type { TemplateSummaryDto } from '@/features/templates/types';
 import { TemplateMiniPreview } from '@/features/templates/components/TemplateMiniPreview';
 import { TemplateStatusBadge } from '@/features/templates/components/TemplateStatusBadge';
+import { cn } from '@/lib/utils';
 
 type TemplateCardProps = {
   template: TemplateSummaryDto;
   onSelect: (templateId: string) => void;
+  selectable?: boolean;
+  selected?: boolean;
+  onToggleSelect?: (templateId: string) => void;
 };
 
-export const TemplateCard = memo(function TemplateCard({ template, onSelect }: TemplateCardProps) {
+export const TemplateCard = memo(function TemplateCard({
+  template,
+  onSelect,
+  selectable = false,
+  selected = false,
+  onToggleSelect,
+}: TemplateCardProps) {
   const preview = template.preview;
 
   return (
     <Card
-      className="group cursor-pointer overflow-hidden border-border/80 transition-all hover:border-border hover:shadow-md"
+      className={cn(
+        'group cursor-pointer overflow-hidden border-border/80 transition-all hover:border-border hover:shadow-md',
+        selected && 'border-primary ring-1 ring-primary/30',
+      )}
       onClick={() => onSelect(template.id)}
     >
       <CardHeader className="space-y-1 p-3 pb-2">
         <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium">{template.metaTemplateName}</p>
-            <p className="text-[11px] text-muted-foreground">
-              {template.category} · {template.language.toUpperCase()}
-            </p>
+          <div className="flex min-w-0 items-start gap-2">
+            {selectable ? (
+              <Checkbox
+                className="mt-0.5"
+                checked={selected}
+                aria-label={`Select ${template.metaTemplateName}`}
+                onCheckedChange={() => onToggleSelect?.(template.id)}
+                onClick={(event) => event.stopPropagation()}
+              />
+            ) : null}
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">{template.metaTemplateName}</p>
+              <p className="text-[11px] text-muted-foreground">
+                {template.category} · {template.language.toUpperCase()}
+              </p>
+            </div>
           </div>
           <TemplateStatusBadge status={template.metaStatus} />
         </div>
@@ -54,16 +79,29 @@ export const TemplateCard = memo(function TemplateCard({ template, onSelect }: T
 type TemplatesCardGridProps = {
   items: TemplateSummaryDto[];
   onSelect: (templateId: string) => void;
+  selectable?: boolean;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (templateId: string) => void;
 };
 
 export const TemplatesCardGrid = memo(function TemplatesCardGrid({
   items,
   onSelect,
+  selectable = false,
+  selectedIds,
+  onToggleSelect,
 }: TemplatesCardGridProps) {
   return (
     <div className="grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {items.map((template) => (
-        <TemplateCard key={template.id} template={template} onSelect={onSelect} />
+        <TemplateCard
+          key={template.id}
+          template={template}
+          onSelect={onSelect}
+          selectable={selectable}
+          selected={selectedIds?.has(template.id)}
+          onToggleSelect={onToggleSelect}
+        />
       ))}
     </div>
   );

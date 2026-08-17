@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Plus, RefreshCw, Search } from 'lucide-react';
+import { CheckSquare, Copy, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -31,6 +31,14 @@ type TemplatesPageControlsProps = {
   isSyncing: boolean;
   onSyncAll: () => void;
   onCreate: () => void;
+  onCopyToWaba?: () => void;
+  onEnterSelectMode?: () => void;
+  onCopySelected?: () => void;
+  onDeleteSelected?: () => void;
+  canCopyToWaba?: boolean;
+  canSelectTemplates?: boolean;
+  isSelecting?: boolean;
+  selectedCount?: number;
   search: string;
   metaStatus: MetaTemplateStatus | undefined;
   category: TemplateCategory | undefined;
@@ -48,6 +56,14 @@ export function TemplatesPageControls({
   isSyncing,
   onSyncAll,
   onCreate,
+  onCopyToWaba,
+  onEnterSelectMode,
+  onCopySelected,
+  onDeleteSelected,
+  canCopyToWaba = false,
+  canSelectTemplates = false,
+  isSelecting = false,
+  selectedCount = 0,
   search,
   metaStatus,
   category,
@@ -112,6 +128,43 @@ export function TemplatesPageControls({
                 <RefreshCw className={cn('mr-2 h-4 w-4', isSyncing && 'animate-spin')} />
                 Sync all
               </Button>
+              {canCopyToWaba && !isSelecting ? (
+                <Button variant="outline" onClick={onCopyToWaba}>
+                  <Copy className="mr-2 h-4 w-4" />
+                  Copy to WABA
+                </Button>
+              ) : null}
+              {canSelectTemplates && !(isSelecting && selectedCount > 0 && !canCopyToWaba) ? (
+                <Button
+                  variant={isSelecting && selectedCount > 0 ? 'default' : 'outline'}
+                  disabled={isSelecting && selectedCount === 0}
+                  onClick={() => {
+                    if (!isSelecting) {
+                      onEnterSelectMode?.();
+                      return;
+                    }
+                    onCopySelected?.();
+                  }}
+                >
+                  {isSelecting && selectedCount > 0 ? (
+                    <>
+                      <Copy className="mr-2 h-4 w-4" />
+                      Copy selected
+                    </>
+                  ) : (
+                    <>
+                      <CheckSquare className="mr-2 h-4 w-4" />
+                      Select
+                    </>
+                  )}
+                </Button>
+              ) : null}
+              {canSelectTemplates && isSelecting && selectedCount > 0 ? (
+                <Button variant="destructive" onClick={onDeleteSelected}>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete selected
+                </Button>
+              ) : null}
               <Button onClick={onCreate}>
                 <Plus className="mr-2 h-4 w-4" />
                 Create template

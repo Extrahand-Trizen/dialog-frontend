@@ -19,20 +19,26 @@ export function CreateTemplatePage() {
   const { user } = useAuth();
   const createMutation = useCreateTemplate();
   const { defaultAccountId, connectedAccounts, isLoading, isError, error } = useWhatsAppAccounts();
-  const [selectedAccountId, setSelectedAccountId] = useState<string | undefined>();
+  const locationState = location.state as
+    | { initialValues?: Partial<TemplateCreateFormValues>; whatsAppAccountId?: string }
+    | null;
+  const [selectedAccountId, setSelectedAccountId] = useState<string | undefined>(
+    locationState?.whatsAppAccountId,
+  );
 
-  const wizardInitialValues = (
-    location.state as { initialValues?: Partial<TemplateCreateFormValues> } | null
-  )?.initialValues;
+  const wizardInitialValues = locationState?.initialValues;
 
   const canCreate = canSyncTemplates(user);
   const activeAccountId = selectedAccountId ?? defaultAccountId;
 
   useEffect(() => {
-    if (!selectedAccountId && defaultAccountId) {
+    if (selectedAccountId && connectedAccounts.some((account) => account.id === selectedAccountId)) {
+      return;
+    }
+    if (defaultAccountId) {
       setSelectedAccountId(defaultAccountId);
     }
-  }, [defaultAccountId, selectedAccountId]);
+  }, [connectedAccounts, defaultAccountId, selectedAccountId]);
 
   if (!canCreate) {
     return <Navigate to="/templates" replace />;
@@ -41,7 +47,7 @@ export function CreateTemplatePage() {
   const handleSubmit = async (values: TemplateCreateFormValues) => {
     if (!activeAccountId) return;
     await createMutation.mutateAsync(toCreateTemplateRequest(values, activeAccountId));
-    navigate('/templates');
+    navigate('/templates', { state: { whatsAppAccountId: activeAccountId } });
   };
 
   return (
@@ -79,7 +85,7 @@ export function CreateTemplatePage() {
           whatsAppAccountId={activeAccountId}
           onSubmit={handleSubmit}
           isSubmitting={createMutation.isPending}
-          onCancel={() => navigate('/templates')}
+          onCancel={() => navigate('/templates', { state: { whatsAppAccountId: activeAccountId } })}
           initialValues={wizardInitialValues}
         />
       )}

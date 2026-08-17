@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Plus, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,10 +20,13 @@ import { useAuth } from '@/features/auth/context/AuthProvider';
 import { getTemplate } from '@/features/templates/api/getTemplate';
 import { listTemplates } from '@/features/templates/api/listTemplates';
 import { TemplateCreateWizardDialog } from '@/features/templates/components/TemplateCreateWizardDialog';
+import { CopyTemplatesDialog } from '@/features/templates/components/CopyTemplatesDialog';
+import { DeleteTemplatesDialog } from '@/features/templates/components/DeleteTemplatesDialog';
 import { TemplateDetailDialog } from '@/features/templates/components/TemplateDetailDialog';
 import { TemplatesCardGrid } from '@/features/templates/components/TemplatesCardGrid';
 import { TemplatesCardGridSkeleton } from '@/features/templates/components/TemplatesCardGridSkeleton';
 import { TemplatesPageControls } from '@/features/templates/components/TemplatesPageControls';
+import { TemplatesSelectionBar } from '@/features/templates/components/TemplatesSelectionBar';
 import { useSyncAllTemplates } from '@/features/templates/hooks/useSyncAllTemplates';
 import { templateKeys } from '@/features/templates/queryKeys';
 import type { TemplateCreateWizardValues } from '@/features/templates/schemas';
@@ -38,6 +41,7 @@ const TEMPLATE_FILTER_DEFAULTS = {
 
 export function TemplatesPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const useMockData = isDevMockAuthEnabled();
   const { user } = useAuth();
   const { params, setParams, resetPage } = useTableParams(TEMPLATE_FILTER_DEFAULTS);
@@ -45,9 +49,17 @@ export function TemplatesPage() {
   const debouncedSearch = useDebouncedValue(searchInput);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [copyOpen, setCopyOpen] = useState(false);
+  const [pendingDeleteIds, setPendingDeleteIds] = useState<string[]>([]);
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [selectedTemplateIds, setSelectedTemplateIds] = useState<Set<string>>(new Set());
   const syncAllMutation = useSyncAllTemplates();
-  const { connectedAccounts, defaultAccountId } = useWhatsAppAccounts();
-  const [selectedAccountId, setSelectedAccountId] = useState<string | undefined>();
+  const { connectedAccounts, defaultAccountId, isLoading: accountsLoading } = useWhatsAppAccounts();
+  const locationAccountId = (
+    location.state as { whatsAppAccountId?: string } | null
+  )?.whatsAppAccountId;
+  const [selectedAccountId, setSelectedAccountId] = useState<string | undefined>(locationAccountId);
+  const previousAccountIdRef = useRef<string | undefined>();
 
   useEffect(() => {
     resetPage();
@@ -65,10 +77,30 @@ export function TemplatesPage() {
     (useMockData ? DEV_MOCK_WHATSAPP_ACCOUNT_ID : undefined);
 
   useEffect(() => {
-    if (!selectedAccountId && defaultAccountId) {
+    if (selectedAccountId && connectedAccountIds.includes(selectedAccountId)) {
+      return;
+    }
+    if (locationAccountId && connectedAccountIds.includes(locationAccountId)) {
+      setSelectedAccountId(locationAccountId);
+      return;
+    }
+    if (defaultAccountId) {
       setSelectedAccountId(defaultAccountId);
     }
-  }, [defaultAccountId, selectedAccountId]);
+  }, [connectedAccountIds, defaultAccountId, locationAccountId, selectedAccountId]);
+
+  useEffect(() => {
+    if (
+      previousAccountIdRef.current &&
+      activeAccountId &&
+      previousAccountIdRef.current !== activeAccountId
+    ) {
+      resetPage();
+      setIsSelecting(false);
+      setSelectedTemplateIds(new Set());
+    }
+    previousAccountIdRef.current = activeAccountId;
+  }, [activeAccountId, resetPage]);
 
   const queryParams = useMemo(
     () => ({
@@ -77,15 +109,15 @@ export function TemplatesPage() {
       metaStatus: params.metaStatus,
       category: params.category,
       search: params.search,
+      whatsAppAccountId: activeAccountId,
     }),
-    [params],
+    [params, activeAccountId],
   );
 
   const templatesQuery = useQuery({
     queryKey: templateKeys.list(queryParams),
     queryFn: () => listTemplates(queryParams),
-    enabled: !useMockData,
-    placeholderData: (prev) => prev,
+    enabled: !useMockData && Boolean(activeAccountId),
   });
 
   const detailQuery = useQuery({
@@ -104,6 +136,40 @@ export function TemplatesPage() {
   const canManage = canSyncTemplates(user);
   const hasConnectedAccounts = connectedAccountIds.length > 0;
   const showActions = canManage && hasConnectedAccounts;
+  const sourceAccount = connectedAccounts.find((account) => account.id === activeAccountId);
+  const targetAccounts = connectedAccounts.filter((account) => account.id !== activeAccountId);
+  const canCopyToWaba = Boolean(showActions && targetAccounts.length > 0);
+  const canSelectTemplates = Boolean(showActions);
+
+  const toggleTemplateSelected = (templateId: string) => {
+    setSelectedTemplateIds((current) => {
+      const next = new Set(current);
+      if (next.has(templateId)) {
+        next.delete(templateId);
+      } else {
+        next.add(templateId);
+      }
+      return next;
+    });
+  };
+
+  const toggleAllOnPage = (checked: boolean) => {
+    const pageIds = listData?.items.map((item) => item.id) ?? [];
+    setSelectedTemplateIds((current) => {
+      const next = new Set(current);
+      if (checked) {
+        pageIds.forEach((id) => next.add(id));
+      } else {
+        pageIds.forEach((id) => next.delete(id));
+      }
+      return next;
+    });
+  };
+
+  const exitSelectMode = () => {
+    setIsSelecting(false);
+    setSelectedTemplateIds(new Set());
+  };
 
   const handleSyncAll = () => {
     if (connectedAccountIds.length === 0) return;
@@ -111,7 +177,9 @@ export function TemplatesPage() {
   };
 
   const handleWizardContinue = (values: TemplateCreateWizardValues) => {
-    navigate('/templates/new', { state: { initialValues: values } });
+    navigate('/templates/new', {
+      state: { initialValues: values, whatsAppAccountId: activeAccountId },
+    });
   };
 
   return (
@@ -125,6 +193,14 @@ export function TemplatesPage() {
           isSyncing={syncAllMutation.isPending}
           onSyncAll={handleSyncAll}
           onCreate={() => setWizardOpen(true)}
+          onCopyToWaba={() => setCopyOpen(true)}
+          onEnterSelectMode={() => setIsSelecting(true)}
+          onCopySelected={() => setCopyOpen(true)}
+          onDeleteSelected={() => setPendingDeleteIds([...selectedTemplateIds])}
+          canCopyToWaba={canCopyToWaba}
+          canSelectTemplates={canSelectTemplates}
+          isSelecting={isSelecting}
+          selectedCount={selectedTemplateIds.size}
           search={searchInput}
           metaStatus={params.metaStatus}
           category={params.category}
@@ -141,7 +217,7 @@ export function TemplatesPage() {
         />
       ) : null}
 
-      {!useMockData && templatesQuery.isLoading ? (
+      {!useMockData && (accountsLoading || templatesQuery.isLoading) ? (
         <TemplatesCardGridSkeleton />
       ) : !useMockData && templatesQuery.isError ? (
         <QueryErrorPanel
@@ -150,7 +226,21 @@ export function TemplatesPage() {
         />
       ) : listData && listData.items.length > 0 ? (
         <>
-          <TemplatesCardGrid items={listData.items} onSelect={setSelectedId} />
+          {canSelectTemplates && isSelecting ? (
+            <TemplatesSelectionBar
+              pageItemIds={listData.items.map((item) => item.id)}
+              selectedIds={selectedTemplateIds}
+              onToggleAllOnPage={toggleAllOnPage}
+              onCancel={exitSelectMode}
+            />
+          ) : null}
+          <TemplatesCardGrid
+            items={listData.items}
+            onSelect={setSelectedId}
+            selectable={canSelectTemplates && isSelecting}
+            selectedIds={selectedTemplateIds}
+            onToggleSelect={toggleTemplateSelected}
+          />
           <TablePagination
             page={listData.meta.page}
             totalPages={listData.meta.totalPages}
@@ -200,8 +290,31 @@ export function TemplatesPage() {
             setSelectedId(null);
             navigate(`/templates/${id}/edit`);
           }}
+          onDelete={(id) => {
+            setSelectedId(null);
+            setPendingDeleteIds([id]);
+          }}
         />
       ) : null}
+
+      <CopyTemplatesDialog
+        open={copyOpen}
+        onOpenChange={setCopyOpen}
+        sourceAccount={sourceAccount}
+        targetAccounts={targetAccounts}
+        selectedTemplateIds={[...selectedTemplateIds]}
+        onCopied={exitSelectMode}
+      />
+
+      <DeleteTemplatesDialog
+        open={pendingDeleteIds.length > 0}
+        onOpenChange={(open) => {
+          if (!open) setPendingDeleteIds([]);
+        }}
+        account={sourceAccount}
+        templateIds={pendingDeleteIds}
+        onDeleted={exitSelectMode}
+      />
 
       <TemplateCreateWizardDialog
         open={wizardOpen}
