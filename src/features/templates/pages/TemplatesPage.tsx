@@ -59,7 +59,7 @@ export function TemplatesPage() {
     location.state as { whatsAppAccountId?: string } | null
   )?.whatsAppAccountId;
   const [selectedAccountId, setSelectedAccountId] = useState<string | undefined>(locationAccountId);
-  const previousAccountIdRef = useRef<string | undefined>();
+  const previousAccountIdRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     resetPage();
