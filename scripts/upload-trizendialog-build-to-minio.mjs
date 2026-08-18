@@ -238,21 +238,27 @@ async function main() {
   ];
   console.log(`\n🔁 SPA fallback: mirroring index.html for ${spaFallbackRoutes.length} routes`);
   for (const route of spaFallbackRoutes) {
-    const objectName = `${remoteBuildPrefix}/${route}/index.html`;
-    try {
-      if (dryRun) {
-        console.log(`   (dry-run) ${objectName}`);
-      } else {
-        await client.fPutObject(BUCKET_NAME, objectName, indexHtml, {
-          'Content-Type': 'text/html; charset=utf-8',
-          'Cache-Control': 'public, max-age=60',
-        });
-        console.log(`   ✅ ${objectName}`);
+    const fallbackObjects = [
+      `${remoteBuildPrefix}/${route}/index.html`,
+      // MinIO has no directory index: bare /login must be an object, not only login/index.html
+      `${remoteBuildPrefix}/${route}`,
+    ];
+    for (const objectName of fallbackObjects) {
+      try {
+        if (dryRun) {
+          console.log(`   (dry-run) ${objectName}`);
+        } else {
+          await client.fPutObject(BUCKET_NAME, objectName, indexHtml, {
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': 'public, max-age=60',
+          });
+          console.log(`   ✅ ${objectName}`);
+        }
+        uploaded += 1;
+      } catch (err) {
+        failed += 1;
+        console.error(`   ❌ ${objectName}: ${err?.message || err}`);
       }
-      uploaded += 1;
-    } catch (err) {
-      failed += 1;
-      console.error(`   ❌ ${objectName}: ${err?.message || err}`);
     }
   }
 

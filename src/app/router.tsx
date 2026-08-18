@@ -10,6 +10,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { RouteErrorBoundary } from '@/components/shared/RouteErrorBoundary';
 import { ProtectedRoute } from '@/features/auth/guards/ProtectedRoute';
 import { AdminRoute } from '@/features/auth/guards/AdminRoute';
+import { shouldUseHashRouter } from '@/lib/router-mode';
 
 const LandingPage = lazy(() =>
   import('@/features/landing/LandingPage').then((m) => ({ default: m.LandingPage })),
@@ -137,34 +138,7 @@ const routes = [
   { path: '*', element: withSuspense(<NotFoundPage />) },
 ];
 
-/**
- * MinIO / static object hosting has no SPA fallback: refresh on /overview → NoSuchKey XML.
- * Hash routing keeps the real object URL (…/index.html) and puts routes after `#`.
- *
- * Enable via:
- * - VITE_ROUTER_MODE=hash (build-time, preferred for CDN/object storage deploys)
- * - or runtime host/path heuristics for existing MinIO/CDN URLs
- */
-function useHashRouter() {
-  const mode = String(import.meta.env.VITE_ROUTER_MODE || '')
-    .trim()
-    .toLowerCase();
-  if (mode === 'hash') return true;
-  if (mode === 'browser' || mode === 'history') return false;
-
-  if (typeof window === 'undefined') return false;
-  const host = window.location.hostname.toLowerCase();
-  const path = window.location.pathname;
-  return (
-    host.includes('frontend-builds') ||
-    host.includes('minio') ||
-    host.endsWith('.apps.extrahand.in') ||
-    path.includes('/frontend-builds/') ||
-    path.includes('/trizendialog-frontend/')
-  );
-}
-
-export const router = useHashRouter()
+export const router = shouldUseHashRouter()
   ? createHashRouter(routes)
   : createBrowserRouter(routes);
 

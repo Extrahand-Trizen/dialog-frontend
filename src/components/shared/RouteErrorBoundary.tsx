@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
+import { redirectToAppPath } from '@/lib/app-navigation';
 
 type RouteErrorBoundaryProps = {
   children: ReactNode;
@@ -27,7 +28,7 @@ export class RouteErrorBoundary extends Component<
 
   private handleReset = (): void => {
     this.setState({ hasError: false });
-    window.location.assign('/overview');
+    redirectToAppPath('/overview');
   };
 
   render(): ReactNode {

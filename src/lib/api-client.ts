@@ -1,6 +1,7 @@
 import axios, { type AxiosError } from 'axios';
 import { getApiBaseUrl } from '@/config/runtime-config';
 import { isDevMockAuthEnabled } from '@/config/dev-mock-auth';
+import { isOnAppPath, redirectToAppPath } from '@/lib/app-navigation';
 import type { ApiErrorBody, ApiSuccessBody } from '@/types/api';
 
 const API_BASE_URL = getApiBaseUrl();
@@ -27,8 +28,8 @@ apiClient.interceptors.response.use(
   (error: AxiosError<ApiErrorBody>) => {
     if (error.response?.status === 401 && !isDevMockAuthEnabled()) {
       localStorage.removeItem(AUTH_TOKEN_KEY);
-      if (window.location.pathname !== '/login') {
-        window.location.assign('/login');
+      if (!isOnAppPath('/login')) {
+        redirectToAppPath('/login');
       }
     }
     return Promise.reject(error);
