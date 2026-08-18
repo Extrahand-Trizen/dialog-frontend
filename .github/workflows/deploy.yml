@@ -49,6 +49,9 @@ jobs:
         run: npm ci
 
       - name: Build
+        env:
+          # Object storage has no SPA path fallback; hash routes survive refresh.
+          VITE_ROUTER_MODE: hash
         run: npm run build
 
       - name: Verify dist/ folder

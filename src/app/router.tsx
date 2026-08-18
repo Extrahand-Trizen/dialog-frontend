@@ -138,22 +138,33 @@ const routes = [
 ];
 
 /**
- * MinIO / static object hosting serves .../latest/index.html with no SPA fallback.
- * Browser history paths like /overview would 404 on refresh, and the full object
- * path never matches app routes (`/`, `/overview`, …) → NotFoundPage.
- * Hash routing keeps the real file URL and puts routes after `#`.
+ * MinIO / static object hosting has no SPA fallback: refresh on /overview → NoSuchKey XML.
+ * Hash routing keeps the real object URL (…/index.html) and puts routes after `#`.
+ *
+ * Enable via:
+ * - VITE_ROUTER_MODE=hash (build-time, preferred for CDN/object storage deploys)
+ * - or runtime host/path heuristics for existing MinIO/CDN URLs
  */
-function isStaticObjectHost() {
+function useHashRouter() {
+  const mode = String(import.meta.env.VITE_ROUTER_MODE || '')
+    .trim()
+    .toLowerCase();
+  if (mode === 'hash') return true;
+  if (mode === 'browser' || mode === 'history') return false;
+
   if (typeof window === 'undefined') return false;
-  const host = window.location.hostname;
+  const host = window.location.hostname.toLowerCase();
+  const path = window.location.pathname;
   return (
     host.includes('frontend-builds') ||
     host.includes('minio') ||
-    window.location.pathname.includes('/frontend-builds/')
+    host.endsWith('.apps.extrahand.in') ||
+    path.includes('/frontend-builds/') ||
+    path.includes('/trizendialog-frontend/')
   );
 }
 
-export const router = isStaticObjectHost()
+export const router = useHashRouter()
   ? createHashRouter(routes)
   : createBrowserRouter(routes);
 

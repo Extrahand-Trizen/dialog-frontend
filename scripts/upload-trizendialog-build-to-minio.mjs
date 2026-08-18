@@ -220,6 +220,42 @@ async function main() {
     }
   }
 
+  // SPA fallback: copy index.html to known client routes so direct loads/refresh
+  // work even when the CDN still uses browser history (no hash) paths.
+  const indexHtml = path.join(DIST_DIR, 'index.html');
+  const spaFallbackRoutes = [
+    'login',
+    'overview',
+    'templates',
+    'templates/new',
+    'messages',
+    'integrations',
+    'profile',
+    'whatsapp',
+    'api-keys',
+    'privacy',
+    'terms',
+  ];
+  console.log(`\n🔁 SPA fallback: mirroring index.html for ${spaFallbackRoutes.length} routes`);
+  for (const route of spaFallbackRoutes) {
+    const objectName = `${remoteBuildPrefix}/${route}/index.html`;
+    try {
+      if (dryRun) {
+        console.log(`   (dry-run) ${objectName}`);
+      } else {
+        await client.fPutObject(BUCKET_NAME, objectName, indexHtml, {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'public, max-age=60',
+        });
+        console.log(`   ✅ ${objectName}`);
+      }
+      uploaded += 1;
+    } catch (err) {
+      failed += 1;
+      console.error(`   ❌ ${objectName}: ${err?.message || err}`);
+    }
+  }
+
   const serverUrl = String(
     process.env.MINIO_ENDPOINT || process.env.MINIO_SERVER_URL || '',
   ).replace(/\/+$/, '');

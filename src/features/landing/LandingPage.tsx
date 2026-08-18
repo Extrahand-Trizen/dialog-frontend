@@ -26,17 +26,14 @@ export function LandingPage() {
             <span className="text-sm font-medium tracking-tight">{APP_NAME}</span>
           </Link>
           <nav className="flex items-center gap-2">
-            {!isLoading && !isAuthenticated ? (
-              <Button variant="ghost" size="sm" asChild>
-                <Link to="/login">Sign in</Link>
+            {!isLoading ? (
+              <Button size="sm" className="landing-cta-hover" asChild>
+                <Link to={dashboardHref}>
+                  {primaryCta}
+                  <ArrowRight className="ml-1.5 size-4" />
+                </Link>
               </Button>
             ) : null}
-            <Button size="sm" className="landing-cta-hover" asChild>
-              <Link to={dashboardHref}>
-                {primaryCta}
-                <ArrowRight className="ml-1.5 size-4" />
-              </Link>
-            </Button>
           </nav>
         </div>
       </header>
