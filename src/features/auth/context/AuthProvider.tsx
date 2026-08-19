@@ -66,7 +66,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (mockAuthEnabled) return;
     localStorage.removeItem(AUTH_TOKEN_KEY);
     setToken(null);
-    queryClient.removeQueries({ queryKey: authKeys.all });
+    // Clear everything, not just auth — templates/messages/etc. are cached
+    // under org-agnostic keys, so a stale entry from this org would
+    // otherwise survive into whichever org logs in next in this tab.
+    queryClient.clear();
   }, [queryClient]);
 
   const user = mockAuthEnabled ? DEV_MOCK_USER : meQuery.data;

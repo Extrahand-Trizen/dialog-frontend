@@ -10,6 +10,9 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { RouteErrorBoundary } from '@/components/shared/RouteErrorBoundary';
 import { ProtectedRoute } from '@/features/auth/guards/ProtectedRoute';
 import { AdminRoute } from '@/features/auth/guards/AdminRoute';
+import { ManagerRoute } from '@/features/auth/guards/ManagerRoute';
+import { PlatformProtectedRoute } from '@/features/platform-admin/guards/PlatformProtectedRoute';
+import { PlatformAdminLayout } from '@/features/platform-admin/components/PlatformAdminLayout';
 import { shouldUseHashRouter } from '@/lib/router-mode';
 
 const LandingPage = lazy(() =>
@@ -60,6 +63,16 @@ const TermsPage = lazy(() =>
 const NotFoundPage = lazy(() =>
   import('@/features/legal/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 );
+const PlatformLoginPage = lazy(() =>
+  import('@/features/platform-admin/pages/PlatformLoginPage').then((m) => ({
+    default: m.PlatformLoginPage,
+  })),
+);
+const OrganizationsPage = lazy(() =>
+  import('@/features/platform-admin/pages/OrganizationsPage').then((m) => ({
+    default: m.OrganizationsPage,
+  })),
+);
 
 function PageLoader() {
   return (
@@ -93,6 +106,17 @@ const routes = [
   { path: '/login', element: withSuspense(<LoginPage />) },
   { path: '/privacy', element: withSuspense(<PrivacyPage />) },
   { path: '/terms', element: withSuspense(<TermsPage />) },
+  { path: '/platform/login', element: withSuspense(<PlatformLoginPage />) },
+  {
+    path: '/platform',
+    element: withSuspense(
+      <PlatformProtectedRoute>
+        <PlatformAdminLayout>
+          <OrganizationsPage />
+        </PlatformAdminLayout>
+      </PlatformProtectedRoute>,
+    ),
+  },
   {
     element: <AuthenticatedLayout />,
     children: [
@@ -101,17 +125,17 @@ const routes = [
       {
         path: '/templates/new',
         element: withSuspense(
-          <AdminRoute>
+          <ManagerRoute>
             <CreateTemplatePage />
-          </AdminRoute>,
+          </ManagerRoute>,
         ),
       },
       {
         path: '/templates/:templateId/edit',
         element: withSuspense(
-          <AdminRoute>
+          <ManagerRoute>
             <EditTemplatePage />
-          </AdminRoute>,
+          </ManagerRoute>,
         ),
       },
       { path: '/messages', element: withSuspense(<MessagesPage />) },

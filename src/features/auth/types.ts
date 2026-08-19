@@ -1,4 +1,4 @@
-export type UserRole = 'ADMIN' | 'VIEWER';
+export type UserRole = 'ADMIN' | 'MANAGER' | 'AGENT' | 'VIEWER';
 
 export type AuthUser = {
   id: string;
@@ -22,6 +22,14 @@ export type LoginResult = {
 
 export function isAdmin(user: AuthUser | null | undefined): boolean {
   return user?.role === 'ADMIN';
+}
+
+export function isManagerOrAdmin(user: AuthUser | null | undefined): boolean {
+  return user?.role === 'ADMIN' || user?.role === 'MANAGER';
+}
+
+export function canWriteMessages(user: AuthUser | null | undefined): boolean {
+  return user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'AGENT';
 }
 
 export function getUserDisplayName(user: AuthUser): string {
