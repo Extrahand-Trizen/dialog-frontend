@@ -68,7 +68,7 @@ const APPROVED_LIST_PARAMS = { page: 1, limit: 100, metaStatus: 'APPROVED' as co
 export function SendMessageDialog({ open, onOpenChange }: SendMessageDialogProps) {
   const useMockData = isDevMockAuthEnabled();
   const sendMutation = useSendTemplateMessage();
-  const phonesQuery = usePhoneNumberOptions(open);
+  const phonesQuery = usePhoneNumberOptions(true);
 
   const form = useForm<SendMessageFormValues>({
     resolver: zodResolver(sendMessageFormSchema),
@@ -181,7 +181,10 @@ export function SendMessageDialog({ open, onOpenChange }: SendMessageDialogProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent
+        className="max-h-[90vh] overflow-y-auto sm:max-w-lg"
+        onPointerDownOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>Send template message</DialogTitle>
           <DialogDescription>
