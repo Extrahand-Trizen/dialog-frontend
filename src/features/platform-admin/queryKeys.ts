@@ -8,4 +8,8 @@ export const platformOrganizationKeys = {
   list: (params: { page: number; limit: number; search?: string }) =>
     [...platformOrganizationKeys.all, 'list', params] as const,
   detail: (id: string) => [...platformOrganizationKeys.all, 'detail', id] as const,
+  whatsAppAccounts: (id: string) =>
+    [...platformOrganizationKeys.all, 'whatsapp-accounts', id] as const,
+  whatsAppAccountDetail: (orgId: string, accountId: string) =>
+    [...platformOrganizationKeys.all, 'whatsapp-account', orgId, accountId] as const,
 };

@@ -4,7 +4,6 @@ import { Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { FilterPanel, ListPageShell, TablePanel } from '@/components/shared/ListPageLayout';
-import { PageActions } from '@/components/shared/PageActions';
 import { QueryErrorPanel } from '@/components/shared/QueryErrorPanel';
 import { TablePagination } from '@/components/shared/TablePagination';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
@@ -84,16 +83,16 @@ export function MessagesPage() {
 
   return (
     <ListPageShell>
-      {canSend ? (
-        <PageActions>
-          <Button onClick={() => setSendOpen(true)}>
-            <Send className="mr-2 h-4 w-4" />
-            Send message
-          </Button>
-        </PageActions>
-      ) : null}
-
-      <FilterPanel>
+      <FilterPanel
+        actions={
+          canSend ? (
+            <Button className="h-9 w-full lg:w-auto" onClick={() => setSendOpen(true)}>
+              <Send className="mr-2 h-4 w-4" />
+              Send message
+            </Button>
+          ) : undefined
+        }
+      >
         <MessagesFilters
           recipientPhone={recipientInput}
           metaTemplateName={templateInput}

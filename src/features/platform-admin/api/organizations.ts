@@ -1,9 +1,11 @@
-import { platformGet, platformGetPaginated, platformPatch, platformPost } from '@/lib/platform-api-client';
+import { platformDelete, platformGet, platformGetPaginated, platformPatch, platformPost } from '@/lib/platform-api-client';
 import type {
   CreateOrganizationInput,
   CreateOrganizationResult,
   OrganizationDetail,
   OrganizationSummary,
+  PlatformWhatsAppAccount,
+  PlatformWhatsAppAccountDetail,
 } from '@/features/platform-admin/types';
 
 export async function listOrganizations(params: {
@@ -40,4 +42,58 @@ export async function updateOrganizationStatus(
     { isActive },
   );
   return data.organization;
+}
+
+export async function updateOrganizationName(
+  id: string,
+  name: string,
+): Promise<OrganizationSummary> {
+  const data = await platformPatch<{ organization: OrganizationSummary }, { name: string }>(
+    `/platform/organizations/${id}`,
+    { name },
+  );
+  return data.organization;
+}
+
+export async function listOrganizationWhatsAppAccounts(
+  organizationId: string,
+): Promise<PlatformWhatsAppAccount[]> {
+  const data = await platformGet<{ accounts: PlatformWhatsAppAccount[] }>(
+    `/platform/organizations/${organizationId}/whatsapp-accounts`,
+  );
+  return data.accounts;
+}
+
+export async function getOrganizationWhatsAppAccount(
+  organizationId: string,
+  accountId: string,
+): Promise<PlatformWhatsAppAccountDetail> {
+  return platformGet<PlatformWhatsAppAccountDetail>(
+    `/platform/organizations/${organizationId}/whatsapp-accounts/${accountId}`,
+  );
+}
+
+export async function updateWhatsAppAccountName(
+  organizationId: string,
+  accountId: string,
+  name: string,
+): Promise<PlatformWhatsAppAccount> {
+  const data = await platformPatch<
+    { account: PlatformWhatsAppAccount },
+    { name: string }
+  >(`/platform/organizations/${organizationId}/whatsapp-accounts/${accountId}`, { name });
+  return data.account;
+}
+
+export type DeleteWhatsAppAccountResult = {
+  outcome: 'deleted';
+};
+
+export async function deleteWhatsAppAccount(
+  organizationId: string,
+  accountId: string,
+): Promise<DeleteWhatsAppAccountResult> {
+  return platformDelete<DeleteWhatsAppAccountResult>(
+    `/platform/organizations/${organizationId}/whatsapp-accounts/${accountId}`,
+  );
 }

@@ -19,7 +19,7 @@ export default {
       },
       fontFamily: {
         sans: [
-          'Inter',
+          '"Plus Jakarta Sans"',
           'ui-sans-serif',
           'system-ui',
           '-apple-system',
@@ -29,7 +29,7 @@ export default {
         ],
         display: [
           'Outfit',
-          'Inter',
+          '"Plus Jakarta Sans"',
           'ui-sans-serif',
           'system-ui',
           'sans-serif',

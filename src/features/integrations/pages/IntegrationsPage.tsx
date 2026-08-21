@@ -1,4 +1,3 @@
-import { ListPageShell } from '@/components/shared/ListPageLayout';
 import {
   OperatorWorkflowCard,
   ResponseFormatCard,
@@ -6,34 +5,39 @@ import {
   TemplatesApiCard,
 } from '@/features/integrations/components/ApiReferenceSection';
 import { IntegrationsPageHeader } from '@/features/integrations/components/IntegrationsPageHeader';
-import { IntegrationsSectionHeading } from '@/features/integrations/components/IntegrationsSectionHeading';
 import { OutboundWebhookCard } from '@/features/integrations/components/OutboundWebhookCard';
 
 export function IntegrationsPage() {
   return (
-    <ListPageShell>
+    <div className="mx-auto max-w-5xl space-y-8">
       <IntegrationsPageHeader />
       <OperatorWorkflowCard />
 
-      <div className="space-y-4">
-        <IntegrationsSectionHeading
-          title="API reference"
-          description="Endpoints for sending messages and managing templates."
-        />
-        <div className="grid gap-6 lg:grid-cols-2">
-          <SendApiCard />
-          <TemplatesApiCard />
-          <ResponseFormatCard />
+      <section className="space-y-4">
+        <div>
+          <h3 className="font-display text-base font-semibold tracking-tight">API reference</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Endpoints for sending messages and managing templates.
+          </p>
         </div>
-      </div>
+        <div className="space-y-4">
+          <SendApiCard />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <TemplatesApiCard />
+            <ResponseFormatCard />
+          </div>
+        </div>
+      </section>
 
-      <div className="space-y-4">
-        <IntegrationsSectionHeading
-          title="Event delivery"
-          description="Receive message status updates on your server instead of polling."
-        />
+      <section className="space-y-4">
+        <div>
+          <h3 className="font-display text-base font-semibold tracking-tight">Event delivery</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Receive message status updates on your server instead of polling.
+          </p>
+        </div>
         <OutboundWebhookCard />
-      </div>
-    </ListPageShell>
+      </section>
+    </div>
   );
 }

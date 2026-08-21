@@ -16,3 +16,17 @@ export const createOrganizationFormSchema = z.object({
 });
 
 export type CreateOrganizationFormValues = z.infer<typeof createOrganizationFormSchema>;
+
+export const updateOrganizationNameFormSchema = z.object({
+  name: z.string().trim().min(2, 'Enter the business name').max(120),
+});
+
+export type UpdateOrganizationNameFormValues = z.infer<typeof updateOrganizationNameFormSchema>;
+
+export const updateWhatsAppAccountNameFormSchema = z.object({
+  name: z.string().trim().min(1, 'Enter a display name').max(200),
+});
+
+export type UpdateWhatsAppAccountNameFormValues = z.infer<
+  typeof updateWhatsAppAccountNameFormSchema
+>;

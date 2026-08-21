@@ -35,7 +35,7 @@ export function OverviewPage() {
   const activityData = useMockData ? DEV_MOCK_RECENT_ACTIVITY : activityQuery.data;
 
   return (
-    <ListPageShell>
+    <ListPageShell className="space-y-5">
       <OverviewPageHeader
         period={period}
         onPeriodChange={setPeriod}

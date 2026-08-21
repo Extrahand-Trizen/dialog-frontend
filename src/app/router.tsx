@@ -27,6 +27,9 @@ const OverviewPage = lazy(() =>
 const MessagesPage = lazy(() =>
   import('@/features/messages/pages/MessagesPage').then((m) => ({ default: m.MessagesPage })),
 );
+const CampaignPage = lazy(() =>
+  import('@/features/campaigns/pages/CampaignPage').then((m) => ({ default: m.CampaignPage })),
+);
 const TemplatesPage = lazy(() =>
   import('@/features/templates/pages/TemplatesPage').then((m) => ({ default: m.TemplatesPage })),
 );
@@ -73,6 +76,16 @@ const OrganizationsPage = lazy(() =>
     default: m.OrganizationsPage,
   })),
 );
+const OrganizationDetailPage = lazy(() =>
+  import('@/features/platform-admin/pages/OrganizationDetailPage').then((m) => ({
+    default: m.OrganizationDetailPage,
+  })),
+);
+const WhatsAppAccountDetailPage = lazy(() =>
+  import('@/features/platform-admin/pages/WhatsAppAccountDetailPage').then((m) => ({
+    default: m.WhatsAppAccountDetailPage,
+  })),
+);
 
 function PageLoader() {
   return (
@@ -112,10 +125,21 @@ const routes = [
     element: withSuspense(
       <PlatformProtectedRoute>
         <PlatformAdminLayout>
-          <OrganizationsPage />
+          <Outlet />
         </PlatformAdminLayout>
       </PlatformProtectedRoute>,
     ),
+    children: [
+      { index: true, element: withSuspense(<OrganizationsPage />) },
+      {
+        path: 'organizations/:id',
+        element: withSuspense(<OrganizationDetailPage />),
+      },
+      {
+        path: 'organizations/:id/whatsapp-accounts/:accountId',
+        element: withSuspense(<WhatsAppAccountDetailPage />),
+      },
+    ],
   },
   {
     element: <AuthenticatedLayout />,
@@ -139,6 +163,7 @@ const routes = [
         ),
       },
       { path: '/messages', element: withSuspense(<MessagesPage />) },
+      { path: '/campaigns', element: withSuspense(<CampaignPage />) },
       { path: '/integrations', element: withSuspense(<IntegrationsPage />) },
       { path: '/profile', element: withSuspense(<ProfilePage />) },
       {

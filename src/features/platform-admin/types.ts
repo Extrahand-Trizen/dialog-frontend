@@ -33,6 +33,44 @@ export type OrganizationDetail = OrganizationSummary & {
   createdByName: string | null;
 };
 
+export type PlatformWhatsAppAccountStatus = 'ACTIVE' | 'ERROR' | 'DISCONNECTED';
+
+export type PlatformWhatsAppAccount = {
+  id: string;
+  organizationId: string;
+  metaWabaId: string;
+  name: string | null;
+  status: PlatformWhatsAppAccountStatus;
+  lastSyncedAt: string | null;
+  lastError: string | null;
+  phoneNumberCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PlatformPhoneNumberStatus = 'ACTIVE' | 'PENDING' | 'RESTRICTED' | 'INACTIVE';
+export type PlatformPhoneQualityRating = 'GREEN' | 'YELLOW' | 'RED' | 'UNKNOWN';
+
+export type PlatformPhoneNumber = {
+  id: string;
+  whatsAppAccountId: string;
+  metaPhoneNumberId: string;
+  displayNumber: string;
+  verifiedName: string | null;
+  qualityRating: PlatformPhoneQualityRating;
+  messagingTier: string | null;
+  status: PlatformPhoneNumberStatus;
+  isDefault: boolean;
+  lastHealthCheckAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PlatformWhatsAppAccountDetail = {
+  account: PlatformWhatsAppAccount;
+  phoneNumbers: PlatformPhoneNumber[];
+};
+
 export type CreateOrganizationInput = {
   name: string;
   adminEmail: string;

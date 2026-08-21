@@ -11,15 +11,20 @@ import { DEV_MOCK_WHATSAPP_ACCOUNTS } from '@/config/dev-mock-data';
 import { useAuth } from '@/features/auth/context/AuthProvider';
 import { listAccounts } from '@/features/whatsapp/api/listAccounts';
 import { ConnectAccountDialog } from '@/features/whatsapp/components/ConnectAccountDialog';
-import { PhoneNumbersPanel } from '@/features/whatsapp/components/PhoneNumbersPanel';
+import { WhatsAppAccountCard } from '@/features/whatsapp/components/WhatsAppAccountCard';
+import { WhatsAppAccountsTable } from '@/features/whatsapp/components/WhatsAppAccountsTable';
 import { WhatsAppSetupHeader } from '@/features/whatsapp/components/WhatsAppSetupHeader';
 import { whatsappKeys } from '@/features/whatsapp/queryKeys';
 import { canManageWhatsApp } from '@/lib/permissions';
+import { cn } from '@/lib/utils';
+
+type ViewMode = 'cards' | 'table';
 
 export function WhatsAppPage() {
   const useMockData = isDevMockAuthEnabled();
   const { user } = useAuth();
   const [connectOpen, setConnectOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('cards');
   const canManage = canManageWhatsApp(user);
 
   const accountsQuery = useQuery({
@@ -37,19 +42,30 @@ export function WhatsAppPage() {
 
   return (
     <ListPageShell>
-      {canManage ? (
-        <WhatsAppSetupHeader
-          accountCount={accountsData?.length ?? 0}
-          phoneCount={totalPhones}
-          canManage={canManage}
-          onConnect={() => setConnectOpen(true)}
-        />
-      ) : null}
+      <WhatsAppSetupHeader
+        accountCount={accountsData?.length ?? 0}
+        phoneCount={totalPhones}
+        canManage={canManage}
+        onConnect={() => setConnectOpen(true)}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        showViewToggle={Boolean(accountsData && accountsData.length > 0)}
+      />
 
       {!useMockData && accountsQuery.isLoading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-44 rounded-xl" />
-          <Skeleton className="h-44 rounded-xl" />
+        <div
+          className={cn(
+            viewMode === 'cards'
+              ? 'grid items-start gap-4 sm:grid-cols-2 xl:grid-cols-3'
+              : 'space-y-3',
+          )}
+        >
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Skeleton
+              key={index}
+              className={viewMode === 'cards' ? 'h-48 rounded-2xl' : 'h-40 rounded-xl'}
+            />
+          ))}
         </div>
       ) : !useMockData && accountsQuery.isError ? (
         <QueryErrorPanel
@@ -57,11 +73,27 @@ export function WhatsAppPage() {
           onRetry={() => void accountsQuery.refetch()}
         />
       ) : accountsData && accountsData.length > 0 ? (
-        <div className="space-y-4">
-          {accountsData.map((account) => (
-            <PhoneNumbersPanel key={account.id} account={account} />
-          ))}
-        </div>
+        viewMode === 'cards' ? (
+          <div className="grid items-start gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {accountsData.map((account) => (
+              <WhatsAppAccountCard key={account.id} account={account} />
+            ))}
+            {canManage ? (
+              <button
+                type="button"
+                onClick={() => setConnectOpen(true)}
+                className="flex h-fit flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border/80 bg-muted/20 px-4 py-8 text-muted-foreground transition hover:border-primary/40 hover:bg-primary/[0.04] hover:text-foreground"
+              >
+                <span className="flex size-12 items-center justify-center rounded-2xl border border-border/70 bg-background">
+                  <Plus className="size-5" />
+                </span>
+                <span className="text-sm font-medium">Connect account</span>
+              </button>
+            ) : null}
+          </div>
+        ) : (
+          <WhatsAppAccountsTable accounts={accountsData} />
+        )
       ) : (
         <EmptyState
           title="No WhatsApp accounts connected"

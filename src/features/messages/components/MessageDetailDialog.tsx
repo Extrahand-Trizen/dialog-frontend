@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { InlineError } from '@/components/shared/InlineError';
-import { StatusBadge } from '@/components/shared/StatusBadge';
+import { MessageStatusPill } from '@/components/shared/MessageStatusPill';
 import { formatDateTime } from '@/lib/format';
 import type { MessageDetailDto } from '@/features/messages/types';
 
@@ -40,7 +40,7 @@ export function MessageDetailDialog({
           <InlineError error={error} />
         ) : data ? (
           <div className="space-y-4 text-sm">
-            <StatusBadge status={data.status} />
+            <MessageStatusPill status={data.status} showCode />
             <dl className="grid gap-2">
               <div>
                 <dt className="text-muted-foreground">Recipient</dt>

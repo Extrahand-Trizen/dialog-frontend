@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { Loader2, MessageSquare } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { AuthPageShell } from '@/components/shared/AuthPageShell';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Form,
   FormControl,
@@ -51,72 +51,86 @@ export function LoginPage() {
   });
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-            <MessageSquare className="h-6 w-6 text-primary-foreground" />
-          </div>
-          <CardTitle>Sign in to {APP_NAME}</CardTitle>
-          <CardDescription>{APP_TAGLINE}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={onSubmit} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" autoComplete="email" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" autoComplete="current-password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {error ? <p className="text-sm text-destructive">{error}</p> : null}
-              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
-                  </>
-                ) : (
-                  'Sign in'
-                )}
-              </Button>
-            </form>
-          </Form>
-          <p className="mt-6 text-center text-xs text-muted-foreground">
-            <Link to="/" className="underline-offset-4 hover:underline">
-              Home
-            </Link>
-            {' · '}
-            <Link to="/privacy" className="underline-offset-4 hover:underline">
-              Privacy
-            </Link>
-            {' · '}
-            <Link to="/terms" className="underline-offset-4 hover:underline">
-              Terms
-            </Link>
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+    <AuthPageShell
+      title={`Sign in to ${APP_NAME}`}
+      description={APP_TAGLINE}
+      footer={
+        <p className="text-xs tracking-wide text-muted-foreground">
+          <Link to="/" className="transition hover:text-foreground">
+            Home
+          </Link>
+          <span className="mx-2 text-border">·</span>
+          <Link to="/privacy" className="transition hover:text-foreground">
+            Privacy
+          </Link>
+          <span className="mx-2 text-border">·</span>
+          <Link to="/terms" className="transition hover:text-foreground">
+            Terms
+          </Link>
+        </p>
+      }
+    >
+      <Form {...form}>
+        <form onSubmit={onSubmit} className="space-y-5">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem className="space-y-2">
+                <FormLabel className="text-[0.8125rem] font-medium">Email</FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    autoComplete="email"
+                    placeholder="you@company.com"
+                    className="h-11 rounded-xl border-border/80 bg-background px-3.5 text-[0.9375rem] shadow-none transition focus-visible:ring-primary/30"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem className="space-y-2">
+                <FormLabel className="text-[0.8125rem] font-medium">Password</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    autoComplete="current-password"
+                    placeholder="••••••••"
+                    className="h-11 rounded-xl border-border/80 bg-background px-3.5 text-[0.9375rem] shadow-none transition focus-visible:ring-primary/30"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          {error ? (
+            <p className="rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+              {error}
+            </p>
+          ) : null}
+          <Button
+            type="submit"
+            className="h-11 w-full rounded-xl text-[0.9375rem] font-medium"
+            disabled={form.formState.isSubmitting}
+          >
+            {form.formState.isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Signing in…
+              </>
+            ) : (
+              'Sign in'
+            )}
+          </Button>
+        </form>
+      </Form>
+    </AuthPageShell>
   );
 }

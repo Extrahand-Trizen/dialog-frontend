@@ -22,25 +22,28 @@ export function NotificationRulesFilters({
   onEnabledChange,
 }: NotificationRulesFiltersProps) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      <div className="space-y-2">
-        <Label htmlFor="rule-event-key">Event key</Label>
+    <div className="grid gap-3 sm:grid-cols-2">
+      <div className="space-y-1.5">
+        <Label htmlFor="rule-event-key" className="text-xs font-medium text-muted-foreground">
+          Event key
+        </Label>
         <Input
           id="rule-event-key"
           placeholder="order.shipped"
+          className="h-9"
           value={eventKey}
           onChange={(event) => onEventKeyChange(event.target.value)}
         />
       </div>
-      <div className="space-y-2">
-        <Label>Status</Label>
+      <div className="space-y-1.5">
+        <Label className="text-xs font-medium text-muted-foreground">Status</Label>
         <Select
           value={enabled ?? 'all'}
           onValueChange={(value) =>
             onEnabledChange(value === 'all' ? undefined : (value as 'true' | 'false'))
           }
         >
-          <SelectTrigger>
+          <SelectTrigger className="h-9">
             <SelectValue placeholder="All rules" />
           </SelectTrigger>
           <SelectContent>

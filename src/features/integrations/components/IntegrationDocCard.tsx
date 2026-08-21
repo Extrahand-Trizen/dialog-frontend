@@ -30,26 +30,28 @@ export function IntegrationDocCard({
   className,
 }: IntegrationDocCardProps) {
   return (
-    <Card id={id} className={cn('overflow-hidden shadow-sm', className)}>
-      <CardHeader className="border-b bg-muted/25 px-5 py-4">
+    <Card id={id} className={cn('overflow-hidden border-border/70 shadow-none', className)}>
+      <CardHeader className="space-y-2 border-b border-border/60 px-4 py-3.5 sm:px-5">
         <div className="flex flex-wrap items-center gap-2">
           {method ? (
             <Badge variant="outline" className={cn('font-mono text-[11px]', METHOD_STYLES[method])}>
               {method}
             </Badge>
           ) : null}
-          <CardTitle className="text-base font-semibold text-foreground">{title}</CardTitle>
+          <CardTitle className="text-sm font-semibold tracking-tight text-foreground">
+            {title}
+          </CardTitle>
         </div>
         {path ? (
-          <code className="mt-2 block rounded-md border bg-background px-3 py-2 text-xs break-all text-foreground">
+          <code className="block rounded-md border border-border/70 bg-muted/30 px-2.5 py-1.5 text-xs break-all text-foreground">
             {path}
           </code>
         ) : null}
         {description ? (
-          <CardDescription className="mt-2 text-sm leading-relaxed">{description}</CardDescription>
+          <CardDescription className="text-sm leading-relaxed">{description}</CardDescription>
         ) : null}
       </CardHeader>
-      <CardContent className="space-y-5 px-5 py-5">{children}</CardContent>
+      <CardContent className="space-y-4 px-4 py-4 sm:px-5">{children}</CardContent>
     </Card>
   );
 }

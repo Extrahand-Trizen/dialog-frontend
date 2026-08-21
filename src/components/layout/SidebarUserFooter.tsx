@@ -20,25 +20,25 @@ export function SidebarUserFooter() {
         <SidebarMenuButton
           asChild
           tooltip={displayName}
-          className="h-auto rounded-lg border border-sidebar-border bg-background p-2.5 shadow-none hover:bg-background"
+          className="h-auto rounded-lg border border-sidebar-border/80 bg-background/80 p-2 shadow-none hover:bg-background"
         >
-          <Link to="/profile" className="flex w-full items-center gap-3">
-            <Avatar className="size-8 shrink-0 rounded-md">
-              <AvatarFallback className="rounded-md bg-primary/10 text-xs font-semibold text-primary">
+          <Link to="/profile" className="flex w-full items-center gap-2">
+            <Avatar className="size-7 shrink-0 rounded-md">
+              <AvatarFallback className="rounded-md bg-primary/10 text-[10px] font-semibold text-primary">
                 {initials}
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1 text-left">
-              <p className="truncate text-sm font-semibold leading-tight text-sidebar-foreground">
+              <p className="truncate text-[13px] font-semibold leading-tight text-sidebar-foreground">
                 {displayName}
               </p>
-              <p className="truncate text-xs font-medium leading-tight text-muted-foreground">
+              <p className="truncate text-[11px] leading-tight text-muted-foreground">
                 {user.organizationSlug}
               </p>
             </div>
             <ChevronRight
               className={cn(
-                'size-4 shrink-0 text-muted-foreground',
+                'size-3.5 shrink-0 text-muted-foreground',
                 'group-data-[collapsible=icon]:hidden',
               )}
             />

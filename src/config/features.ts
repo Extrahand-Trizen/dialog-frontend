@@ -1,5 +1,5 @@
 export const features = {
-  campaigns: false,
+  campaigns: true,
   analyticsV2: false,
   multiOrg: false,
 } as const;

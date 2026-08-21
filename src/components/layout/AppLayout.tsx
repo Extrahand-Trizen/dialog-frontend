@@ -14,6 +14,10 @@ const PAGE_TITLES: Record<string, { title: string; description?: string }> = {
     title: 'Messages',
     description: 'Outbound WhatsApp messages and delivery status.',
   },
+  '/campaigns': {
+    title: 'Campaigns',
+    description: 'Send one approved template to many recipients at once.',
+  },
   '/templates': {
     title: 'Templates',
     description: 'Create, submit, and manage WhatsApp message templates.',
@@ -56,12 +60,12 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <SidebarProvider defaultOpen>
       <AppSidebar />
-      <SidebarInset className="border-l border-border/50 bg-background">
-        <div className="sticky top-0 z-20 border-b border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <SidebarInset className="border-l border-border/40 bg-background">
+        <div className="sticky top-0 z-20 border-b border-border/50 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75">
           <DevMockAuthBanner />
           <TopNav pageTitle={page.title} description={page.description} />
         </div>
-        <div className="flex min-w-0 flex-1 flex-col p-4 sm:p-6">
+        <div className="flex min-w-0 flex-1 flex-col p-4 sm:p-5 lg:p-6">
           <div className="mx-auto w-full min-w-0 max-w-7xl flex-1">{children}</div>
         </div>
       </SidebarInset>

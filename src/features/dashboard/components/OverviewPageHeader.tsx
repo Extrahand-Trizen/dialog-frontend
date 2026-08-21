@@ -21,15 +21,17 @@ export function OverviewPageHeader({
   periodStart,
 }: OverviewPageHeaderProps) {
   return (
-    <Card className="shadow-sm">
-      <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <BarChart3 className="h-5 w-5" strokeWidth={2.25} />
+    <Card className="border-border/70 shadow-none">
+      <CardContent className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
+        <div className="flex items-center gap-3">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <BarChart3 className="size-4" strokeWidth={2.25} />
           </div>
-          <div className="space-y-0.5">
-            <h2 className="text-base font-semibold text-foreground">Performance summary</h2>
-            <p className="text-sm text-muted-foreground">
+          <div className="min-w-0 space-y-0.5">
+            <h2 className="text-sm font-semibold tracking-tight text-foreground">
+              Performance summary
+            </h2>
+            <p className="text-xs text-muted-foreground">
               {PERIOD_SUMMARY[period]}
               {periodStart
                 ? ` · since ${new Date(periodStart).toLocaleDateString(undefined, {

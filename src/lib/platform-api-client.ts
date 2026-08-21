@@ -67,3 +67,8 @@ export async function platformPatch<T, B = unknown>(url: string, body?: B): Prom
   const response = await platformApiClient.patch<ApiSuccessBody<T>>(url, body);
   return response.data.data;
 }
+
+export async function platformDelete<T = null>(url: string): Promise<T> {
+  const response = await platformApiClient.delete<ApiSuccessBody<T>>(url);
+  return response.data.data;
+}

@@ -11,17 +11,18 @@ import {
   SidebarMenuItem,
   SidebarRail,
   SidebarSeparator,
+  SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar';
 import {
   BarChart3,
   FileText,
   Key,
+  Megaphone,
   MessageSquare,
   MessagesSquare,
   Phone,
   Plug,
-  User,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { APP_NAME } from '@/constants/branding';
@@ -50,8 +51,8 @@ const navSections: NavSection[] = [
     items: [
       { title: 'Overview', url: '/overview', icon: BarChart3 },
       { title: 'Messages', url: '/messages', icon: MessagesSquare },
+      { title: 'Campaigns', url: '/campaigns', icon: Megaphone },
       { title: 'Integrations', url: '/integrations', icon: Plug },
-      { title: 'Profile', url: '/profile', icon: User },
     ],
   },
   {
@@ -62,7 +63,7 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    label: 'Administration',
+    label: 'Admin',
     items: [{ title: 'API Keys', url: '/api-keys', icon: Key }],
     adminOnly: true,
   },
@@ -85,10 +86,10 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
         isActive={isActive}
         tooltip={item.title}
         className={cn(
-          'h-9 rounded-lg px-3 text-sm font-medium transition-colors',
+          'h-8 rounded-lg px-2.5 text-[13px] font-medium transition-colors',
           isActive
             ? 'bg-sidebar-accent font-semibold text-sidebar-accent-foreground shadow-none'
-            : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+            : 'text-sidebar-foreground/90 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
         )}
       >
         <Link
@@ -99,8 +100,8 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
         >
           <item.icon
             className={cn(
-              'size-[18px] shrink-0 stroke-[2px]',
-              isActive ? 'text-sidebar-accent-foreground' : 'text-sidebar-foreground/80',
+              'size-4 shrink-0 stroke-[2px]',
+              isActive ? 'text-sidebar-accent-foreground' : 'text-sidebar-foreground/70',
             )}
           />
           <span>{item.title}</span>
@@ -113,7 +114,9 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
 export function AppSidebar() {
   const { pathname } = useLocation();
   const { user } = useAuth();
+  const { state } = useSidebar();
   const showAdminNav = canViewAdminNav(user);
+  const collapsed = state === 'collapsed';
 
   const visibleSections = navSections
     .filter((section) => !section.adminOnly || showAdminNav)
@@ -124,35 +127,50 @@ export function AppSidebar() {
     .filter((section) => section.items.length > 0);
 
   return (
-    <Sidebar collapsible="icon" className="border-r-0 bg-sidebar">
-      <SidebarHeader className="border-b border-sidebar-border px-3 py-4">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              size="lg"
-              asChild
-              tooltip={APP_NAME}
-              className="h-10 rounded-lg px-2 hover:bg-transparent active:bg-transparent data-[state=open]:hover:bg-transparent"
-            >
-              <Link to="/overview" className="flex items-center gap-3">
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                  <MessageSquare className="size-4" strokeWidth={2.25} />
-                </div>
-                <span className="truncate text-base font-semibold tracking-tight text-sidebar-foreground">
-                  {APP_NAME}
-                </span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-sidebar">
+      <SidebarHeader className="border-b border-sidebar-border p-2">
+        <div
+          className={cn(
+            'flex items-center gap-1',
+            collapsed ? 'flex-col gap-1.5' : 'justify-between',
+          )}
+        >
+          <SidebarMenu className={cn(collapsed ? 'w-auto' : 'min-w-0 flex-1')}>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                size="lg"
+                asChild
+                tooltip={APP_NAME}
+                className="h-9 rounded-lg px-1.5 hover:bg-transparent active:bg-transparent data-[state=open]:hover:bg-transparent"
+              >
+                <Link to="/overview" className="flex items-center gap-2">
+                  <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                    <MessageSquare className="size-3.5" strokeWidth={2.25} />
+                  </div>
+                  <span className="truncate font-display text-sm font-semibold tracking-tight text-sidebar-foreground">
+                    {APP_NAME}
+                  </span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+
+          <SidebarTrigger
+            className={cn(
+              'size-8 shrink-0 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground',
+              collapsed && 'mx-auto',
+            )}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          />
+        </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 py-4">
+      <SidebarContent className="px-2 py-3">
         {visibleSections.map((section, index) => (
           <div key={section.label}>
-            {index > 0 ? <SidebarSeparator className="mb-4 bg-sidebar-border" /> : null}
-            <SidebarGroup className="p-0 pb-4 last:pb-0">
-              <SidebarGroupLabel className="mb-1.5 h-auto px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sidebar-foreground/75">
+            {index > 0 ? <SidebarSeparator className="mb-3 bg-sidebar-border" /> : null}
+            <SidebarGroup className="p-0 pb-3 last:pb-0">
+              <SidebarGroupLabel className="mb-1 h-auto px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-sidebar-foreground/55">
                 {section.label}
               </SidebarGroupLabel>
               <SidebarGroupContent>
@@ -171,7 +189,7 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-3">
+      <SidebarFooter className="border-t border-sidebar-border p-2">
         <SidebarUserFooter />
       </SidebarFooter>
 

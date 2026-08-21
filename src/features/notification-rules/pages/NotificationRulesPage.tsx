@@ -4,7 +4,6 @@ import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { FilterPanel, ListPageShell, TablePanel } from '@/components/shared/ListPageLayout';
-import { PageActions } from '@/components/shared/PageActions';
 import { QueryErrorPanel } from '@/components/shared/QueryErrorPanel';
 import { TablePagination } from '@/components/shared/TablePagination';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
@@ -97,16 +96,16 @@ export function NotificationRulesPage() {
 
   return (
     <ListPageShell>
-      {canManage ? (
-        <PageActions>
-          <Button onClick={handleCreate}>
-            <Plus className="mr-2 h-4 w-4" />
-            Create rule
-          </Button>
-        </PageActions>
-      ) : null}
-
-      <FilterPanel>
+      <FilterPanel
+        actions={
+          canManage ? (
+            <Button className="h-9 w-full lg:w-auto" onClick={handleCreate}>
+              <Plus className="mr-2 h-4 w-4" />
+              Create rule
+            </Button>
+          ) : undefined
+        }
+      >
         <NotificationRulesFilters
           eventKey={eventKeyInput}
           enabled={params.enabled}

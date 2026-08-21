@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { StatusBadge } from '@/components/shared/StatusBadge';
+import { MessageStatusPill } from '@/components/shared/MessageStatusPill';
 import { formatDateTime } from '@/lib/format';
 import {
   Table,
@@ -23,11 +23,19 @@ export const MessagesTable = memo(function MessagesTable({
   return (
     <Table>
       <TableHeader>
-        <TableRow>
-          <TableHead>Recipient</TableHead>
-          <TableHead>Template</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Sent</TableHead>
+        <TableRow className="hover:bg-transparent">
+          <TableHead className="h-10 text-xs font-medium text-muted-foreground">
+            Recipient
+          </TableHead>
+          <TableHead className="h-10 text-xs font-medium text-muted-foreground">
+            Template
+          </TableHead>
+          <TableHead className="h-10 text-xs font-medium text-muted-foreground">
+            Delivery status
+          </TableHead>
+          <TableHead className="h-10 text-xs font-medium text-muted-foreground">
+            Sent
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -37,12 +45,16 @@ export const MessagesTable = memo(function MessagesTable({
             className="cursor-pointer"
             onClick={() => onSelect(message.id)}
           >
-            <TableCell>{message.recipientPhone}</TableCell>
-            <TableCell>{message.metaTemplateName ?? '—'}</TableCell>
-            <TableCell>
-              <StatusBadge status={message.status} />
+            <TableCell className="font-medium tabular-nums">{message.recipientPhone}</TableCell>
+            <TableCell className="text-muted-foreground">
+              {message.metaTemplateName ?? '—'}
             </TableCell>
-            <TableCell>{formatDateTime(message.sentAt ?? message.createdAt)}</TableCell>
+            <TableCell>
+              <MessageStatusPill status={message.status} />
+            </TableCell>
+            <TableCell className="text-muted-foreground">
+              {formatDateTime(message.sentAt ?? message.createdAt)}
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
