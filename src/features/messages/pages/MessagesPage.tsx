@@ -66,12 +66,21 @@ export function MessagesPage() {
     queryFn: () => listMessages(queryParams),
     enabled: !useMockData,
     placeholderData: (prev) => prev,
+    refetchInterval: (query) => {
+      const items = query.state.data?.items ?? [];
+      const pending = items.some((m) => m.status === 'QUEUED' || m.status === 'SENT');
+      return pending ? 4000 : false;
+    },
   });
 
   const detailQuery = useQuery({
     queryKey: messageKeys.detail(selectedId ?? ''),
     queryFn: () => getMessage({ messageId: selectedId! }),
     enabled: !useMockData && !!selectedId,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === 'QUEUED' || status === 'SENT' ? 3000 : false;
+    },
   });
 
   const listData = useMockData ? filterDevMockMessages(queryParams) : messagesQuery.data;
