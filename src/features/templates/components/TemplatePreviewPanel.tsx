@@ -4,6 +4,7 @@ import { TemplatePreviewHeaderMedia } from '@/features/templates/components/Temp
 import { TemplateCarouselCardImage } from '@/features/templates/components/TemplateCarouselCardImage';
 import { getTemplateCarouselPreviewUrl, getTemplateHeaderPreviewUrl } from '@/features/templates/utils/resolveTemplateMediaUrl';
 import type { TemplateHeaderType, TemplatePreviewDto, TemplateFormat } from '@/features/templates/types';
+import { cn } from '@/lib/utils';
 
 type TemplatePreviewPanelProps = {
   templateKind?: TemplateFormat;
@@ -16,6 +17,9 @@ type TemplatePreviewPanelProps = {
   headerMediaUrl?: string;
   headerMediaHandle?: string;
   carouselCards?: TemplatePreviewDto['carouselCards'];
+  className?: string;
+  title?: string;
+  description?: string;
 };
 
 export function TemplatePreviewPanel({
@@ -29,6 +33,9 @@ export function TemplatePreviewPanel({
   headerMediaUrl,
   headerMediaHandle,
   carouselCards = [],
+  className,
+  title = 'Live preview',
+  description = 'Approximate WhatsApp message layout',
 }: TemplatePreviewPanelProps) {
   const resolvedHeaderType = headerType === 'none' ? 'none' : headerType;
   const isCarousel = templateKind === 'carousel';
@@ -37,17 +44,19 @@ export function TemplatePreviewPanel({
     getTemplateHeaderPreviewUrl({ headerMediaUrl, headerMediaHandle });
 
   return (
-    <Card className="shadow-sm">
-      <CardHeader className="border-b bg-muted/25 pb-4">
+    <Card className={cn('shadow-sm', className)}>
+      <CardHeader className="border-b border-border/60 bg-muted/20 px-4 py-3">
         <div className="flex items-center gap-2">
           <Eye className="h-4 w-4 text-primary" strokeWidth={2.25} />
           <div>
-            <CardTitle className="text-base font-semibold text-foreground">Live preview</CardTitle>
-            <CardDescription className="text-sm">Approximate WhatsApp message layout</CardDescription>
+            <CardTitle className="text-sm font-semibold tracking-tight text-foreground">
+              {title}
+            </CardTitle>
+            <CardDescription className="text-xs">{description}</CardDescription>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-5">
+      <CardContent className="p-4">
         <div
           className="mx-auto max-w-sm rounded-xl border bg-[#e5ddd5] p-3 shadow-inner"
           style={{

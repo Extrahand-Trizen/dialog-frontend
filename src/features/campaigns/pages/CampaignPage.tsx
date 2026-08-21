@@ -26,6 +26,10 @@ import {
   type CampaignRecipientResult,
   parseRecipientPhones,
 } from '@/features/campaigns/utils/parseRecipients';
+import {
+  applyCampaignPreviewSamples,
+  buildCampaignPreviewSamples,
+} from '@/features/campaigns/utils/campaignPreview';
 import { sendTemplateMessage } from '@/features/messages/api/messagesApi';
 import { messageKeys } from '@/features/messages/queryKeys';
 import {
@@ -34,6 +38,7 @@ import {
   PHONE_DEFAULT_VALUE,
   templateHasDynamicUrlButton,
 } from '@/features/messages/schemas/sendMessageSchema';
+import { TemplatePreviewPanel } from '@/features/templates/components/TemplatePreviewPanel';
 import { getTemplate } from '@/features/templates/api/getTemplate';
 import { listTemplates } from '@/features/templates/api/listTemplates';
 import { templateKeys } from '@/features/templates/queryKeys';
@@ -117,6 +122,23 @@ export function CampaignPage() {
     const pending = results.filter((r) => r.status === 'pending' || r.status === 'sending').length;
     return { queued, failed, pending, total: results.length };
   }, [results]);
+
+  const livePreview = useMemo(() => {
+    const detail = templateDetailQuery.data;
+    const base = detail?.preview ?? selectedTemplate?.preview;
+    if (!base) return null;
+    const samples = buildCampaignPreviewSamples(
+      detail?.currentVersionDetail?.variableSchema,
+      variables,
+      buttonUrlSuffix,
+    );
+    return applyCampaignPreviewSamples(base, samples, buttonUrlSuffix);
+  }, [
+    templateDetailQuery.data,
+    selectedTemplate?.preview,
+    variables,
+    buttonUrlSuffix,
+  ]);
 
   async function handleSend() {
     setFormError(null);
@@ -357,52 +379,87 @@ export function CampaignPage() {
             </Button>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-semibold tracking-tight">Send progress</p>
-              {results.length > 0 ? (
-                <p className="text-xs text-muted-foreground">
-                  {summary.queued} queued · {summary.failed} failed
-                </p>
-              ) : null}
+          <div className="space-y-5 lg:sticky lg:top-4 lg:self-start">
+            <div className="space-y-2">
+              <p className="text-sm font-semibold tracking-tight">Message preview</p>
+              {!templateId ? (
+                <div className="rounded-xl border border-dashed border-border/80 bg-muted/20 px-4 py-10 text-center text-sm text-muted-foreground">
+                  Select a template to preview how the message will look.
+                </div>
+              ) : templateDetailQuery.isLoading ? (
+                <Skeleton className="h-64 rounded-xl" />
+              ) : livePreview ? (
+                <TemplatePreviewPanel
+                  className="border-border/70 shadow-none"
+                  title="How it will look"
+                  description="Updates as you fill shared variables"
+                  templateKind={livePreview.templateKind}
+                  headerType={livePreview.headerType}
+                  headerText={livePreview.headerText}
+                  headerMediaUrl={livePreview.headerMediaUrl}
+                  headerMediaHandle={livePreview.headerMediaHandle}
+                  bodyText={livePreview.bodyText}
+                  footerText={livePreview.footerText}
+                  buttons={livePreview.buttons}
+                  carouselCards={livePreview.carouselCards}
+                />
+              ) : (
+                <div className="rounded-xl border border-dashed border-border/80 bg-muted/20 px-4 py-10 text-center text-sm text-muted-foreground">
+                  Preview is not available for this template.
+                </div>
+              )}
             </div>
-            {results.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-border/80 bg-muted/20 px-4 py-10 text-center text-sm text-muted-foreground">
-                Results appear here as each recipient is queued.
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-semibold tracking-tight">Send progress</p>
+                {results.length > 0 ? (
+                  <p className="text-xs text-muted-foreground">
+                    {summary.queued} queued · {summary.failed} failed
+                    {isSending ? ` · ${summary.total - summary.pending}/${summary.total}` : ''}
+                  </p>
+                ) : null}
               </div>
-            ) : (
-              <div className="max-h-[28rem] overflow-y-auto rounded-xl border border-border/70">
-                <ul className="divide-y divide-border/60">
-                  {results.map((row) => (
-                    <li
-                      key={row.phone}
-                      className="flex items-start justify-between gap-3 px-3 py-2.5 text-sm"
-                    >
-                      <div className="min-w-0">
-                        <p className="font-medium tabular-nums">{row.phone}</p>
-                        {row.error ? (
-                          <p className="mt-0.5 line-clamp-2 text-xs text-destructive">{row.error}</p>
-                        ) : null}
-                      </div>
-                      <span
-                        className={cn(
-                          'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium',
-                          row.status === 'queued' || row.status === 'duplicate'
-                            ? 'bg-emerald-50 text-emerald-700'
-                            : row.status === 'failed'
-                              ? 'bg-destructive/10 text-destructive'
-                              : row.status === 'sending'
-                                ? 'bg-sky-50 text-sky-700'
-                                : 'bg-muted text-muted-foreground',
-                        )}
+              {results.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-border/80 bg-muted/20 px-4 py-10 text-center text-sm text-muted-foreground">
+                  Results appear here as each recipient is queued.
+                </div>
+              ) : (
+                <div className="max-h-[22rem] overflow-y-auto rounded-xl border border-border/70">
+                  <ul className="divide-y divide-border/60">
+                    {results.map((row) => (
+                      <li
+                        key={row.phone}
+                        className="flex items-start justify-between gap-3 px-3 py-2.5 text-sm"
                       >
-                        {row.status === 'duplicate' ? 'duplicate' : row.status}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+                        <div className="min-w-0">
+                          <p className="font-medium tabular-nums">{row.phone}</p>
+                          {row.error ? (
+                            <p className="mt-0.5 line-clamp-2 text-xs text-destructive">
+                              {row.error}
+                            </p>
+                          ) : null}
+                        </div>
+                        <span
+                          className={cn(
+                            'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium capitalize',
+                            row.status === 'queued' || row.status === 'duplicate'
+                              ? 'bg-emerald-50 text-emerald-700'
+                              : row.status === 'failed'
+                                ? 'bg-destructive/10 text-destructive'
+                                : row.status === 'sending'
+                                  ? 'bg-sky-50 text-sky-700'
+                                  : 'bg-muted text-muted-foreground',
+                          )}
+                        >
+                          {row.status === 'duplicate' ? 'duplicate' : row.status}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
