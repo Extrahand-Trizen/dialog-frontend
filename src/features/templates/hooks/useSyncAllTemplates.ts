@@ -17,7 +17,7 @@ function formatSyncSummary(results: SyncTemplatesResponse[]): string {
     parts.push(`${updatedCount} content update${updatedCount === 1 ? '' : 's'}`);
   }
 
-  return `${parts.join(' · ')}. Approval status still comes from webhooks.`;
+  return `${parts.join(' · ')}. Approval status refreshed from Meta.`;
 }
 
 export function useSyncAllTemplates() {

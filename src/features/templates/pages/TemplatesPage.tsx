@@ -253,7 +253,7 @@ export function TemplatesPage() {
           title="No templates yet"
           description={
             hasConnectedAccounts
-              ? 'Create a template here, or use Sync all to import existing templates from Meta. Approval status updates via webhook.'
+              ? 'Create a template here, or use Sync all to import existing templates and refresh their approval status from Meta.'
               : 'Connect a WhatsApp account, then create or import templates.'
           }
           action={

@@ -116,8 +116,8 @@ export function TemplatesPageControls({
             ) : null}
             {hasAccounts ? (
               <p className="text-xs text-muted-foreground">
-                Approval status updates automatically via Meta webhook. Sync all imports templates
-                and content from Meta — it does not change approval status.
+                Sync all imports templates from Meta and refreshes approval status. Webhooks still
+                apply status changes in real time.
               </p>
             ) : null}
           </div>
