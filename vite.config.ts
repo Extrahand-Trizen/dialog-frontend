@@ -14,9 +14,15 @@ export default defineConfig(({ mode }) => {
     ''
   ).trim();
 
+  const base =
+    process.env.VITE_BASE?.trim() ||
+    env.VITE_BASE?.trim() ||
+    '/';
+
   return {
-    // Relative asset URLs so MinIO subfolder hosting (.../latest/index.html) works
-    base: './',
+    // Default `/` so deep links (/calls, /inbox) load assets from the site root.
+    // Set VITE_BASE=./ only for MinIO / nested static folders.
+    base,
     plugins: [react(), tailwindcss()],
     // Expose NEXT_PUBLIC_* the same way Vite exposes VITE_* (CI / shared naming)
     envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
