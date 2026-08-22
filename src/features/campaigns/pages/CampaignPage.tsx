@@ -229,15 +229,20 @@ export function CampaignPage() {
           idempotencyKey: `campaign-${crypto.randomUUID()}`,
           phoneNumberId: senderPhoneId,
         });
+        const sendStatus: CampaignRecipientResult['status'] = result.duplicate
+          ? 'duplicate'
+          : result.status === 'FAILED'
+            ? 'failed'
+            : result.status === 'SENT'
+              ? 'sent'
+              : result.status === 'DELIVERED'
+                ? 'delivered'
+                : result.status === 'READ'
+                  ? 'read'
+                  : 'queued';
         next[i] = {
           ...next[i],
-          status: result.duplicate
-            ? 'duplicate'
-            : result.status === 'FAILED'
-              ? 'failed'
-              : result.status === 'SENT' || result.status === 'DELIVERED' || result.status === 'READ'
-                ? result.status.toLowerCase()
-                : 'queued',
+          status: sendStatus,
           messageId: result.messageId,
         };
       } catch (error) {

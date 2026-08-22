@@ -12,7 +12,7 @@ import type {
 export async function listConversations(req: ListConversationsRequest) {
   return getPaginated<ConversationSummaryDto>(
     '/conversations',
-    toApiQueryParams(req as Record<string, string | number | undefined>),
+    toApiQueryParams(req),
   );
 }
 

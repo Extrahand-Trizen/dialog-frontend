@@ -97,18 +97,16 @@ export function CallNotificationsPage() {
                       <Button asChild size="sm" variant="outline">
                         <Link to={`/calls/conversations/${item.contactId}`}>Open chat</Link>
                       </Button>
+                    ) : callingLive ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => contact && void openConfirm(contact)}
+                      >
+                        Call
+                      </Button>
                     ) : (
-                      {callingLive ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          onClick={() => contact && void openConfirm(contact)}
-                        >
-                          Call
-                        </Button>
-                      ) : (
-                        <ComingSoonButton>Call · Coming soon</ComingSoonButton>
-                      )}
+                      <ComingSoonButton>Call · Coming soon</ComingSoonButton>
                     )}
                   </div>
                 </CardContent>
