@@ -27,6 +27,9 @@ const OverviewPage = lazy(() =>
 const MessagesPage = lazy(() =>
   import('@/features/messages/pages/MessagesPage').then((m) => ({ default: m.MessagesPage })),
 );
+const InboxPage = lazy(() =>
+  import('@/features/inbox/pages/InboxPage').then((m) => ({ default: m.InboxPage })),
+);
 const CampaignPage = lazy(() =>
   import('@/features/campaigns/pages/CampaignPage').then((m) => ({ default: m.CampaignPage })),
 );
@@ -163,6 +166,8 @@ const routes = [
         ),
       },
       { path: '/messages', element: withSuspense(<MessagesPage />) },
+      { path: '/inbox', element: withSuspense(<InboxPage />) },
+      { path: '/inbox/:conversationId', element: withSuspense(<InboxPage />) },
       { path: '/campaigns', element: withSuspense(<CampaignPage />) },
       { path: '/integrations', element: withSuspense(<IntegrationsPage />) },
       { path: '/profile', element: withSuspense(<ProfilePage />) },

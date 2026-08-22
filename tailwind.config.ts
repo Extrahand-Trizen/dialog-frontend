@@ -34,6 +34,18 @@ export default {
           'system-ui',
           'sans-serif',
         ],
+        // Neutral system stack for chat bubble text — the branded display font
+        // (Plus Jakarta Sans) reads poorly at small sizes in dense message text.
+        chat: [
+          'ui-sans-serif',
+          'system-ui',
+          '-apple-system',
+          'Segoe UI',
+          'Roboto',
+          'Helvetica Neue',
+          'Arial',
+          'sans-serif',
+        ],
       },
       colors: {
         border: 'hsl(var(--border))',

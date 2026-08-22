@@ -17,6 +17,7 @@ import {
 import {
   BarChart3,
   FileText,
+  Inbox,
   Key,
   Megaphone,
   MessageSquare,
@@ -50,6 +51,7 @@ const navSections: NavSection[] = [
     label: 'Platform',
     items: [
       { title: 'Overview', url: '/overview', icon: BarChart3 },
+      { title: 'Inbox', url: '/inbox', icon: Inbox, matchPrefix: true },
       { title: 'Messages', url: '/messages', icon: MessagesSquare },
       { title: 'Campaigns', url: '/campaigns', icon: Megaphone },
       { title: 'Integrations', url: '/integrations', icon: Plug },
