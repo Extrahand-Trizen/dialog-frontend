@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Megaphone, Send } from 'lucide-react';
+import { Loader2, History, Megaphone, Send } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -32,6 +33,8 @@ import {
 } from '@/features/campaigns/utils/campaignPreview';
 import { sendTemplateMessage } from '@/features/messages/api/messagesApi';
 import { messageKeys } from '@/features/messages/queryKeys';
+import { createCampaign, getCampaign, updateCampaignRecipient } from '@/features/campaigns/api/campaignsApi';
+import { campaignKeys } from '@/features/campaigns/queryKeys';
 import {
   extractVariableSlots,
   parsePhoneNumberId,
@@ -46,6 +49,7 @@ import type { TemplateSummaryDto } from '@/features/templates/types';
 import { usePhoneNumberOptions } from '@/hooks/use-phone-number-options';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { canSendMessages } from '@/lib/permissions';
+import { RecipientStatusBadge } from '@/features/campaigns/components/CampaignStatusBadge';
 import { cn } from '@/lib/utils';
 
 const APPROVED_LIST_PARAMS = { page: 1, limit: 100, metaStatus: 'APPROVED' as const };
@@ -66,6 +70,7 @@ export function CampaignPage() {
   const [results, setResults] = useState<CampaignRecipientResult[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [historyId, setHistoryId] = useState<string | null>(null);
 
   const templatesQuery = useQuery({
     queryKey: templateKeys.list(APPROVED_LIST_PARAMS),
@@ -117,10 +122,13 @@ export function CampaignPage() {
   const overLimit = parsed.phones.length > MAX_RECIPIENTS;
 
   const summary = useMemo(() => {
-    const queued = results.filter((r) => r.status === 'queued' || r.status === 'duplicate').length;
+    const queued = results.filter((r) => r.status === 'queued').length;
+    const sent = results.filter(
+      (r) => r.status === 'sent' || r.status === 'delivered' || r.status === 'read' || r.status === 'duplicate',
+    ).length;
     const failed = results.filter((r) => r.status === 'failed').length;
     const pending = results.filter((r) => r.status === 'pending' || r.status === 'sending').length;
-    return { queued, failed, pending, total: results.length };
+    return { queued, sent, failed, pending, total: results.length };
   }, [results]);
 
   const livePreview = useMemo(() => {
@@ -186,11 +194,32 @@ export function CampaignPage() {
     }));
     setResults(initial);
     setIsSending(true);
+    setHistoryId(null);
+
+    const senderPhoneId = parsePhoneNumberId(phoneNumberId);
+    let campaignId: string | null = null;
+    try {
+      const created = await createCampaign({
+        name: selectedTemplate.metaTemplateName,
+        templateName: selectedTemplate.metaTemplateName,
+        language: selectedTemplate.language,
+        phoneNumberId: senderPhoneId,
+        variables: Object.keys(filledVariables).length > 0 ? filledVariables : undefined,
+        recipients: parsed.phones,
+      });
+      campaignId = created.id;
+      setHistoryId(created.id);
+    } catch {
+      // Live send still proceeds; history is best-effort.
+    }
 
     const next = [...initial];
     for (let i = 0; i < next.length; i += 1) {
       next[i] = { ...next[i], status: 'sending' };
       setResults([...next]);
+      if (campaignId) {
+        void updateCampaignRecipient(campaignId, next[i]).catch(() => undefined);
+      }
       try {
         const result = await sendTemplateMessage({
           template: selectedTemplate.metaTemplateName,
@@ -198,11 +227,17 @@ export function CampaignPage() {
           to: next[i].phone,
           variables: Object.keys(filledVariables).length > 0 ? filledVariables : undefined,
           idempotencyKey: `campaign-${crypto.randomUUID()}`,
-          phoneNumberId: parsePhoneNumberId(phoneNumberId),
+          phoneNumberId: senderPhoneId,
         });
         next[i] = {
           ...next[i],
-          status: result.duplicate ? 'duplicate' : 'queued',
+          status: result.duplicate
+            ? 'duplicate'
+            : result.status === 'FAILED'
+              ? 'failed'
+              : result.status === 'SENT' || result.status === 'DELIVERED' || result.status === 'READ'
+                ? result.status.toLowerCase()
+                : 'queued',
           messageId: result.messageId,
         };
       } catch (error) {
@@ -213,10 +248,31 @@ export function CampaignPage() {
         };
       }
       setResults([...next]);
+      if (campaignId) {
+        void updateCampaignRecipient(campaignId, next[i]).catch(() => undefined);
+      }
     }
 
     setIsSending(false);
+    if (campaignId) {
+      try {
+        const latest = await getCampaign(campaignId);
+        if (latest.recipients?.length) {
+          setResults(
+            latest.recipients.map((row) => ({
+              phone: row.phone,
+              status: row.status,
+              messageId: row.messageId,
+              error: row.error,
+            })),
+          );
+        }
+      } catch {
+        // Keep local results if history refresh fails.
+      }
+    }
     void queryClient.invalidateQueries({ queryKey: messageKeys.lists() });
+    void queryClient.invalidateQueries({ queryKey: campaignKeys.all });
   }
 
   if (!canSend) {
@@ -230,6 +286,18 @@ export function CampaignPage() {
 
   return (
     <ListPageShell>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">
+          One approved template, many recipients.
+        </p>
+        <Button asChild variant="outline" size="sm">
+          <Link to="/campaigns/history">
+            <History className="mr-1.5 size-3.5" />
+            History
+          </Link>
+        </Button>
+      </div>
+
       <Card className="border-border/70 shadow-none">
         <CardHeader className="flex flex-row items-start gap-3 space-y-0 border-b border-border/60 p-4 sm:p-5">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -237,11 +305,10 @@ export function CampaignPage() {
           </div>
           <div className="space-y-1">
             <CardTitle className="font-display text-base font-semibold tracking-tight">
-              Campaign send
+              New campaign
             </CardTitle>
             <CardDescription className="text-sm leading-relaxed">
-              Send one approved template to many recipients. Shared variables apply to every number;
-              each send uses its own idempotency key.
+              Shared variables apply to every number. Each recipient is queued separately.
             </CardDescription>
           </div>
         </CardHeader>
@@ -415,8 +482,16 @@ export function CampaignPage() {
                 <p className="text-sm font-semibold tracking-tight">Send progress</p>
                 {results.length > 0 ? (
                   <p className="text-xs text-muted-foreground">
-                    {summary.queued} queued · {summary.failed} failed
+                    {summary.sent} sent · {summary.queued} queued · {summary.failed} failed
                     {isSending ? ` · ${summary.total - summary.pending}/${summary.total}` : ''}
+                    {historyId ? (
+                      <>
+                        {' · '}
+                        <Link className="underline" to={`/campaigns/history/${historyId}`}>
+                          Open in history
+                        </Link>
+                      </>
+                    ) : null}
                   </p>
                 ) : null}
               </div>
@@ -440,20 +515,7 @@ export function CampaignPage() {
                             </p>
                           ) : null}
                         </div>
-                        <span
-                          className={cn(
-                            'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium capitalize',
-                            row.status === 'queued' || row.status === 'duplicate'
-                              ? 'bg-emerald-50 text-emerald-700'
-                              : row.status === 'failed'
-                                ? 'bg-destructive/10 text-destructive'
-                                : row.status === 'sending'
-                                  ? 'bg-sky-50 text-sky-700'
-                                  : 'bg-muted text-muted-foreground',
-                          )}
-                        >
-                          {row.status === 'duplicate' ? 'duplicate' : row.status}
-                        </span>
+                        <RecipientStatusBadge status={row.status} />
                       </li>
                     ))}
                   </ul>

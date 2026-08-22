@@ -14,9 +14,37 @@ const PAGE_TITLES: Record<string, { title: string; description?: string }> = {
     title: 'Messages',
     description: 'Outbound WhatsApp messages and delivery status.',
   },
+  '/calls': {
+    title: 'Calls',
+    description: 'Voice calling through Trizen virtual numbers — coming soon.',
+  },
+  '/calls/settings': {
+    title: 'Calling',
+    description: 'Voice preferences for outbound calls from Dialog.',
+  },
+  '/calls/notifications': {
+    title: 'Notifications',
+    description: 'Missed calls, completed calls, and WhatsApp activity.',
+  },
+  '/calls/conversations': {
+    title: 'Conversation',
+    description: 'Chat timeline with call activity.',
+  },
+  '/calls/contacts': {
+    title: 'Contact',
+    description: 'Call, WhatsApp, and recent call activity.',
+  },
   '/campaigns': {
     title: 'Campaigns',
-    description: 'Send one approved template to many recipients at once.',
+    description: 'Send one approved template to many recipients.',
+  },
+  '/campaigns/history': {
+    title: 'History',
+    description: 'Past campaign sends.',
+  },
+  '/campaigns/history/:id': {
+    title: 'Campaign',
+    description: 'Results for this send.',
   },
   '/templates': {
     title: 'Templates',
@@ -41,7 +69,27 @@ const PAGE_TITLES: Record<string, { title: string; description?: string }> = {
   },
   '/api-keys': {
     title: 'API Keys',
-    description: 'Create and revoke keys for sending messages via the platform API.',
+    description: 'Keys for WhatsApp messaging and the Trizen Voice API.',
+  },
+  '/virtual-numbers': {
+    title: 'Virtual Numbers',
+    description: 'Trizen virtual numbers for business calling — coming soon.',
+  },
+  '/virtual-numbers/get': {
+    title: 'Get a Virtual Number',
+    description: 'Number purchase for calling is coming soon.',
+  },
+  '/virtual-numbers/:id': {
+    title: 'Number details',
+    description: 'Capabilities, call routing, webhooks, and usage.',
+  },
+  '/developer/voice': {
+    title: 'Trizen Voice API',
+    description: 'Add calling to your website or application using your Trizen virtual number.',
+  },
+  '/developer/webhooks': {
+    title: 'Webhooks',
+    description: 'Receive normalized Trizen call events on your server.',
   },
 };
 
@@ -55,7 +103,15 @@ export function AppLayout({ children }: AppLayoutProps) {
     PAGE_TITLES[pathname] ??
     (/^\/templates\/[^/]+\/edit$/.test(pathname)
       ? PAGE_TITLES['/templates/:templateId/edit']
-      : { title: APP_NAME });
+      : pathname.startsWith('/calls/conversations/')
+        ? PAGE_TITLES['/calls/conversations']
+        : pathname.startsWith('/calls/contacts/')
+          ? PAGE_TITLES['/calls/contacts']
+          : pathname.startsWith('/campaigns/history/')
+            ? PAGE_TITLES['/campaigns/history/:id']
+          : pathname.startsWith('/virtual-numbers/') && pathname !== '/virtual-numbers/get'
+            ? PAGE_TITLES['/virtual-numbers/:id']
+          : { title: APP_NAME });
 
   return (
     <SidebarProvider defaultOpen>

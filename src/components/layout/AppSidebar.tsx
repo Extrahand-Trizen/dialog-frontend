@@ -23,6 +23,7 @@ import {
   MessageSquare,
   MessagesSquare,
   Phone,
+  PhoneCall,
   Plug,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
@@ -53,8 +54,16 @@ const navSections: NavSection[] = [
       { title: 'Overview', url: '/overview', icon: BarChart3 },
       { title: 'Inbox', url: '/inbox', icon: Inbox, matchPrefix: true },
       { title: 'Messages', url: '/messages', icon: MessagesSquare },
-      { title: 'Campaigns', url: '/campaigns', icon: Megaphone },
+      { title: 'Calls', url: '/calls', icon: PhoneCall, matchPrefix: true },
+      { title: 'Campaigns', url: '/campaigns', icon: Megaphone, matchPrefix: true },
       { title: 'Integrations', url: '/integrations', icon: Plug },
+    ],
+  },
+  {
+    label: 'Voice',
+    items: [
+      { title: 'Virtual Numbers', url: '/virtual-numbers', icon: Phone, matchPrefix: true },
+      { title: 'Get a Number', url: '/virtual-numbers/get', icon: PhoneCall },
     ],
   },
   {
@@ -65,13 +74,22 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    label: 'Admin',
-    items: [{ title: 'API Keys', url: '/api-keys', icon: Key }],
-    adminOnly: true,
+    label: 'Developer',
+    items: [
+      { title: 'API Keys', url: '/api-keys', icon: Key, adminOnly: true },
+      { title: 'Voice API', url: '/developer/voice', icon: PhoneCall },
+      { title: 'Webhooks', url: '/developer/webhooks', icon: Plug },
+    ],
   },
 ];
 
 function isNavItemActive(pathname: string, item: NavItem): boolean {
+  if (item.url === '/virtual-numbers') {
+    return (
+      pathname === '/virtual-numbers' ||
+      (pathname.startsWith('/virtual-numbers/') && pathname !== '/virtual-numbers/get')
+    );
+  }
   if (item.matchPrefix) {
     return pathname === item.url || pathname.startsWith(`${item.url}/`);
   }

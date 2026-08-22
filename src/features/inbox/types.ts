@@ -9,6 +9,8 @@ export type ConversationSummaryDto = {
   lastMessageDirection: ConversationDirection | null;
   unreadCount: number;
   canSendFreeText: boolean;
+  lastInboundAt?: string | null;
+  freeTextWindowExpiresAt?: string | null;
 };
 
 export type ConversationThreadMessageDto = {
@@ -32,6 +34,7 @@ export type ListConversationsRequest = {
   page: number;
   limit: number;
   unreadOnly?: boolean;
+  search?: string;
 };
 
 export type ListConversationThreadRequest = {

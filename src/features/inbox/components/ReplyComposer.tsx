@@ -138,13 +138,19 @@ function TemplateReplyForm({ conversationId }: { conversationId: string }) {
   );
 }
 
-function TextReplyForm({ conversationId }: { conversationId: string }) {
+function TextReplyForm({
+  conversationId,
+  disabled,
+}: {
+  conversationId: string;
+  disabled?: boolean;
+}) {
   const sendMutation = useSendReply(conversationId);
   const [body, setBody] = useState('');
 
   const onSubmit = async () => {
     const trimmed = body.trim();
-    if (!trimmed) return;
+    if (!trimmed || disabled) return;
 
     await sendMutation.mutateAsync({
       type: 'text',
@@ -159,9 +165,10 @@ function TextReplyForm({ conversationId }: { conversationId: string }) {
       <Textarea
         value={body}
         onChange={(e) => setBody(e.target.value)}
-        placeholder="Type a message…"
+        placeholder={disabled ? 'Waiting for a WhatsApp reply from this number…' : 'Type a message…'}
         className="min-h-10 flex-1 resize-none font-chat text-[14.5px]"
         rows={1}
+        disabled={disabled || sendMutation.isPending}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -171,7 +178,7 @@ function TextReplyForm({ conversationId }: { conversationId: string }) {
       />
       <Button
         size="icon"
-        disabled={!body.trim() || sendMutation.isPending}
+        disabled={disabled || !body.trim() || sendMutation.isPending}
         onClick={() => void onSubmit()}
       >
         <Send className="size-4" />
@@ -181,34 +188,26 @@ function TextReplyForm({ conversationId }: { conversationId: string }) {
 }
 
 export function ReplyComposer({ conversationId, canSendFreeText }: ReplyComposerProps) {
-  const [preferredMode, setPreferredMode] = useState<'text' | 'template'>('text');
-  const mode = canSendFreeText ? preferredMode : 'template';
-
   return (
-    <div className="space-y-2 border-t p-3">
+    <div className="space-y-3 border-t p-3">
       {!canSendFreeText ? (
-        <p className="text-xs text-muted-foreground">
-          This conversation's 24-hour reply window has closed. Send an approved template to
-          re-open it.
-        </p>
-      ) : (
-        <div className="flex justify-end">
-          <Button
-            variant="link"
-            size="sm"
-            className="h-auto p-0 text-xs"
-            onClick={() => setPreferredMode((m) => (m === 'text' ? 'template' : 'text'))}
-          >
-            {mode === 'text' ? 'Send a template instead' : 'Back to free-text reply'}
-          </Button>
+        <div className="rounded-md border border-amber-200/80 bg-amber-50 px-3 py-2 text-xs text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-100">
+          Type a message after this contact replies on WhatsApp (left-side bubble in this chat).
+          Sending a template from here does not unlock typing. Until then you can still send a
+          template below.
         </div>
-      )}
+      ) : null}
 
-      {mode === 'text' && canSendFreeText ? (
-        <TextReplyForm conversationId={conversationId} />
-      ) : (
-        <TemplateReplyForm conversationId={conversationId} />
-      )}
+      <TextReplyForm conversationId={conversationId} disabled={!canSendFreeText} />
+
+      <details className="rounded-md border border-border/60 p-3">
+        <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
+          Send an approved template
+        </summary>
+        <div className="mt-3">
+          <TemplateReplyForm conversationId={conversationId} />
+        </div>
+      </details>
     </div>
   );
 }

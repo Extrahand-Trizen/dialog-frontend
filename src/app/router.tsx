@@ -30,8 +30,65 @@ const MessagesPage = lazy(() =>
 const InboxPage = lazy(() =>
   import('@/features/inbox/pages/InboxPage').then((m) => ({ default: m.InboxPage })),
 );
+const CallsPage = lazy(() =>
+  import('@/features/calls/pages/CallsPage').then((m) => ({ default: m.CallsPage })),
+);
+const ConversationPage = lazy(() =>
+  import('@/features/calls/pages/ConversationPage').then((m) => ({
+    default: m.ConversationPage,
+  })),
+);
+const ContactDetailsPage = lazy(() =>
+  import('@/features/calls/pages/ContactDetailsPage').then((m) => ({
+    default: m.ContactDetailsPage,
+  })),
+);
+const CallNotificationsPage = lazy(() =>
+  import('@/features/calls/pages/CallNotificationsPage').then((m) => ({
+    default: m.CallNotificationsPage,
+  })),
+);
+const CallingSettingsPage = lazy(() =>
+  import('@/features/calls/pages/CallingSettingsPage').then((m) => ({
+    default: m.CallingSettingsPage,
+  })),
+);
+const VirtualNumbersPage = lazy(() =>
+  import('@/features/voice/pages/VirtualNumbersPage').then((m) => ({
+    default: m.VirtualNumbersPage,
+  })),
+);
+const GetNumberPage = lazy(() =>
+  import('@/features/voice/pages/GetNumberPage').then((m) => ({ default: m.GetNumberPage })),
+);
+const NumberDetailsPage = lazy(() =>
+  import('@/features/voice/pages/NumberDetailsPage').then((m) => ({
+    default: m.NumberDetailsPage,
+  })),
+);
+const VoiceApiPage = lazy(() =>
+  import('@/features/voice/pages/VoiceApiPage').then((m) => ({ default: m.VoiceApiPage })),
+);
+const VoiceWebhooksPage = lazy(() =>
+  import('@/features/voice/pages/VoiceWebhooksPage').then((m) => ({
+    default: m.VoiceWebhooksPage,
+  })),
+);
+const CallingLayout = lazy(() =>
+  import('@/features/calls/CallingLayout').then((m) => ({ default: m.CallingLayout })),
+);
 const CampaignPage = lazy(() =>
   import('@/features/campaigns/pages/CampaignPage').then((m) => ({ default: m.CampaignPage })),
+);
+const CampaignHistoryPage = lazy(() =>
+  import('@/features/campaigns/pages/CampaignHistoryPage').then((m) => ({
+    default: m.CampaignHistoryPage,
+  })),
+);
+const CampaignHistoryDetailPage = lazy(() =>
+  import('@/features/campaigns/pages/CampaignHistoryDetailPage').then((m) => ({
+    default: m.CampaignHistoryDetailPage,
+  })),
 );
 const TemplatesPage = lazy(() =>
   import('@/features/templates/pages/TemplatesPage').then((m) => ({ default: m.TemplatesPage })),
@@ -168,7 +225,42 @@ const routes = [
       { path: '/messages', element: withSuspense(<MessagesPage />) },
       { path: '/inbox', element: withSuspense(<InboxPage />) },
       { path: '/inbox/:conversationId', element: withSuspense(<InboxPage />) },
+      {
+        element: withSuspense(<CallingLayout />),
+        children: [
+          { path: '/calls', element: withSuspense(<CallsPage />) },
+          {
+            path: '/calls/conversations/:contactId',
+            element: withSuspense(<ConversationPage />),
+          },
+          {
+            path: '/calls/contacts/:contactId',
+            element: withSuspense(<ContactDetailsPage />),
+          },
+          {
+            path: '/calls/notifications',
+            element: withSuspense(<CallNotificationsPage />),
+          },
+          {
+            path: '/calls/settings',
+            element: withSuspense(<CallingSettingsPage />),
+          },
+        ],
+      },
+      { path: '/virtual-numbers', element: withSuspense(<VirtualNumbersPage />) },
+      { path: '/virtual-numbers/get', element: withSuspense(<GetNumberPage />) },
+      {
+        path: '/virtual-numbers/:numberId',
+        element: withSuspense(<NumberDetailsPage />),
+      },
+      { path: '/developer/voice', element: withSuspense(<VoiceApiPage />) },
+      { path: '/developer/webhooks', element: withSuspense(<VoiceWebhooksPage />) },
       { path: '/campaigns', element: withSuspense(<CampaignPage />) },
+      { path: '/campaigns/history', element: withSuspense(<CampaignHistoryPage />) },
+      {
+        path: '/campaigns/history/:campaignId',
+        element: withSuspense(<CampaignHistoryDetailPage />),
+      },
       { path: '/integrations', element: withSuspense(<IntegrationsPage />) },
       { path: '/profile', element: withSuspense(<ProfilePage />) },
       {

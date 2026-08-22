@@ -6,9 +6,11 @@ import { ChatThread } from '@/features/inbox/components/ChatThread';
 import { ConversationList } from '@/features/inbox/components/ConversationList';
 import { ReplyComposer } from '@/features/inbox/components/ReplyComposer';
 import { ThreadHeader } from '@/features/inbox/components/ThreadHeader';
+import { useConversationThread } from '@/features/inbox/hooks/useConversationThread';
 import { useConversations } from '@/features/inbox/hooks/useConversations';
 import { useMarkConversationRead } from '@/features/inbox/hooks/useMarkConversationRead';
 import { canSendMessages } from '@/lib/permissions';
+import { cn } from '@/lib/utils';
 
 export function InboxPage() {
   const { conversationId } = useParams<{ conversationId?: string }>();
@@ -16,12 +18,24 @@ export function InboxPage() {
   const { user } = useAuth();
   const canSend = canSendMessages(user);
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
   const markRead = useMarkConversationRead();
 
-  // Reuse the already-fetched list page to find the selected conversation's
-  // canSendFreeText hint without a second round trip.
-  const listQuery = useConversations({ page, limit: 30 });
-  const selectedConversation = listQuery.data?.items.find((item) => item.id === conversationId);
+  const listQuery = useConversations({
+    page,
+    limit: 30,
+    search: search || undefined,
+  });
+  const threadQuery = useConversationThread(conversationId, { page: 1, limit: 50 });
+  const inboundUnlocksFreeText = (threadQuery.data?.items ?? []).some((message) => {
+    if (message.direction !== 'INBOUND') return false;
+    return Date.now() - new Date(message.createdAt).getTime() < 24 * 60 * 60 * 1000;
+  });
+  const selectedConversation =
+    threadQuery.data?.conversation ??
+    listQuery.data?.items.find((item) => item.id === conversationId);
+  const canSendFreeText =
+    inboundUnlocksFreeText || selectedConversation?.canSendFreeText === true;
 
   useEffect(() => {
     if (conversationId) {
@@ -30,24 +44,36 @@ export function InboxPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
+
   return (
-    <div className="flex h-[calc(100vh-8rem)] overflow-hidden rounded-lg border">
-      <div className="w-full max-w-xs shrink-0 border-r">
+    <div className="flex h-[calc(100vh-8rem)] min-h-[480px] overflow-hidden rounded-xl border border-border/70 bg-card">
+      <div
+        className={cn(
+          'w-full shrink-0 border-r border-border/60 md:max-w-xs',
+          conversationId ? 'hidden md:flex md:flex-col' : 'flex flex-col',
+        )}
+      >
         <ConversationList
           page={page}
+          search={search}
           onPageChange={setPage}
+          onSearchChange={setSearch}
           selectedId={conversationId}
           onSelect={(id) => navigate(`/inbox/${id}`)}
         />
       </div>
 
-      <div className="flex flex-1 flex-col">
+      <div className={cn('min-w-0 flex-1 flex-col', conversationId ? 'flex' : 'hidden md:flex')}>
         {conversationId ? (
           <>
             {selectedConversation ? (
               <ThreadHeader
                 contactPhone={selectedConversation.contactPhone}
-                canSendFreeText={selectedConversation.canSendFreeText}
+                canSendFreeText={canSendFreeText}
+                freeTextWindowExpiresAt={selectedConversation.freeTextWindowExpiresAt}
                 onBack={() => navigate('/inbox')}
               />
             ) : null}
@@ -55,7 +81,7 @@ export function InboxPage() {
             {canSend ? (
               <ReplyComposer
                 conversationId={conversationId}
-                canSendFreeText={selectedConversation?.canSendFreeText ?? false}
+                canSendFreeText={canSendFreeText}
               />
             ) : null}
           </>
@@ -63,7 +89,7 @@ export function InboxPage() {
           <div className="flex flex-1 items-center justify-center p-8">
             <EmptyState
               title="Select a conversation"
-              description="Choose a contact from the list to view the message thread."
+              description="Choose a contact from the list to view the thread and reply."
             />
           </div>
         )}

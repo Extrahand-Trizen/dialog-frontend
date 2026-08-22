@@ -19,13 +19,13 @@ export function useSendReply(conversationId: string) {
     mutationFn: (body: SendConversationReplyRequest) => sendConversationReply(conversationId, body),
     onSuccess: (result) => {
       void queryClient.invalidateQueries({ queryKey: conversationKeys.all });
-      toastMutationSuccess(result.duplicate ? 'Message already queued for this key' : 'Reply sent');
+      toastMutationSuccess(result.duplicate ? 'Already queued' : 'Sent');
     },
     onError: (error) => {
       if (isOutsideWindowError(error)) {
         toastMutationError(
           error,
-          "This conversation's 24-hour reply window has closed — send an approved template instead.",
+          "Free-text is locked until this customer messages you again. You can still send an approved template.",
         );
         return;
       }

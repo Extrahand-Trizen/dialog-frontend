@@ -20,10 +20,12 @@ export async function getConversationThread(
   conversationId: string,
   req: ListConversationThreadRequest,
 ) {
-  return getPaginated<ConversationThreadMessageDto>(
+  const result = await getPaginated<ConversationThreadMessageDto>(
     `/conversations/${conversationId}/messages`,
     toApiQueryParams(req as Record<string, string | number | undefined>),
   );
+  const conversation = (result.meta as { conversation?: ConversationSummaryDto }).conversation;
+  return { ...result, conversation };
 }
 
 export async function markConversationRead(conversationId: string): Promise<null> {

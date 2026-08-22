@@ -2,6 +2,7 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ContactAvatar } from '@/features/inbox/components/ContactAvatar';
+import { formatDisplayPhone } from '@/features/inbox/formatPhone';
 import type { ConversationSummaryDto } from '@/features/inbox/types';
 
 type ConversationListItemProps = {
@@ -26,7 +27,7 @@ export function ConversationListItem({ conversation, isActive, onSelect }: Conve
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
           <span className={cn('truncate text-sm', hasUnread ? 'font-semibold' : 'font-medium')}>
-            +{conversation.contactPhone}
+            {formatDisplayPhone(conversation.contactPhone)}
           </span>
           <span className={cn('shrink-0 text-xs', hasUnread ? 'font-medium text-primary' : 'text-muted-foreground')}>
             {formatDistanceToNowStrict(new Date(conversation.lastMessageAt), { addSuffix: false })}

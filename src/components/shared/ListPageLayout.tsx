@@ -8,7 +8,7 @@ type ListPageShellProps = {
 };
 
 export function ListPageShell({ children, className }: ListPageShellProps) {
-  return <div className={cn('space-y-4', className)}>{children}</div>;
+  return <div className={cn('min-w-0 max-w-full space-y-4 overflow-x-clip', className)}>{children}</div>;
 }
 
 type FilterPanelProps = {
@@ -22,7 +22,7 @@ type FilterPanelProps = {
 
 export function FilterPanel({ children, actions, align = 'end', className }: FilterPanelProps) {
   return (
-    <Card className={cn('border-border/70 shadow-none', className)}>
+    <Card className={cn('min-w-0 border-border/70 shadow-none', className)}>
       <CardContent className="p-3 sm:p-4">
         {actions ? (
           <div
@@ -51,7 +51,7 @@ type TablePanelProps = {
 
 export function TablePanel({ children, className }: TablePanelProps) {
   return (
-    <Card className={cn('overflow-hidden border-border/70 shadow-none', className)}>
+    <Card className={cn('min-w-0 overflow-hidden border-border/70 shadow-none', className)}>
       <CardContent className="p-0">{children}</CardContent>
     </Card>
   );

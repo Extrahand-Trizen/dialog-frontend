@@ -28,7 +28,15 @@ export function parseRecipientPhones(raw: string): {
 
 export type CampaignRecipientResult = {
   phone: string;
-  status: 'pending' | 'sending' | 'queued' | 'failed' | 'duplicate';
+  status:
+    | 'pending'
+    | 'sending'
+    | 'queued'
+    | 'sent'
+    | 'delivered'
+    | 'read'
+    | 'failed'
+    | 'duplicate';
   messageId?: string;
   error?: string;
 };
