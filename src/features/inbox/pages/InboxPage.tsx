@@ -9,6 +9,7 @@ import { ThreadHeader } from '@/features/inbox/components/ThreadHeader';
 import { useConversationThread } from '@/features/inbox/hooks/useConversationThread';
 import { useConversations } from '@/features/inbox/hooks/useConversations';
 import { useMarkConversationRead } from '@/features/inbox/hooks/useMarkConversationRead';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { canSendMessages } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 
@@ -18,13 +19,14 @@ export function InboxPage() {
   const { user } = useAuth();
   const canSend = canSendMessages(user);
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedSearch = useDebouncedValue(searchInput);
   const markRead = useMarkConversationRead();
 
   const listQuery = useConversations({
     page,
     limit: 30,
-    search: search || undefined,
+    search: debouncedSearch || undefined,
   });
   const threadQuery = useConversationThread(conversationId, { page: 1, limit: 50 });
   const inboundUnlocksFreeText = (threadQuery.data?.items ?? []).some((message) => {
@@ -46,7 +48,7 @@ export function InboxPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [search]);
+  }, [debouncedSearch]);
 
   return (
     <div className="flex h-[calc(100vh-8rem)] min-h-[480px] overflow-hidden rounded-xl border border-border/70 bg-card">
@@ -58,9 +60,10 @@ export function InboxPage() {
       >
         <ConversationList
           page={page}
-          search={search}
+          search={searchInput}
+          debouncedSearch={debouncedSearch}
           onPageChange={setPage}
-          onSearchChange={setSearch}
+          onSearchChange={setSearchInput}
           selectedId={conversationId}
           onSelect={(id) => navigate(`/inbox/${id}`)}
         />

@@ -10,6 +10,7 @@ import { ConversationListItem } from '@/features/inbox/components/ConversationLi
 type ConversationListProps = {
   page: number;
   search: string;
+  debouncedSearch: string;
   onPageChange: (page: number) => void;
   onSearchChange: (value: string) => void;
   selectedId: string | undefined;
@@ -21,12 +22,20 @@ const CONVERSATIONS_PAGE_SIZE = 30;
 export function ConversationList({
   page,
   search,
+  debouncedSearch,
   onPageChange,
   onSearchChange,
   selectedId,
   onSelect,
 }: ConversationListProps) {
-  const query = useConversations({ page, limit: CONVERSATIONS_PAGE_SIZE, search: search || undefined });
+  const query = useConversations({
+    page,
+    limit: CONVERSATIONS_PAGE_SIZE,
+    search: debouncedSearch || undefined,
+  });
+
+  const isSearchPending = search !== debouncedSearch;
+  const showLoading = query.isLoading || isSearchPending || (query.isFetching && query.isPlaceholderData);
 
   return (
     <div className="flex h-full flex-col">
@@ -42,7 +51,7 @@ export function ConversationList({
         </div>
       </div>
 
-      {query.isLoading ? (
+      {showLoading ? (
         <div className="space-y-3 p-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-14 w-full" />
@@ -55,8 +64,12 @@ export function ConversationList({
       ) : (query.data?.items.length ?? 0) === 0 ? (
         <div className="p-4">
           <EmptyState
-            title="No conversations yet"
-            description="Messages you send from Inbox or Messages, and customer replies, show up here."
+            title={debouncedSearch ? 'No matching conversations' : 'No conversations yet'}
+            description={
+              debouncedSearch
+                ? `No contacts match "${debouncedSearch}".`
+                : 'Messages you send from Inbox or Messages, and customer replies, show up here.'
+            }
           />
         </div>
       ) : (
