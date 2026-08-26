@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, History, Megaphone, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -71,6 +71,7 @@ export function CampaignPage() {
   const [isSending, setIsSending] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [historyId, setHistoryId] = useState<string | null>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
 
   const templatesQuery = useQuery({
     queryKey: templateKeys.list(APPROVED_LIST_PARAMS),
@@ -110,13 +111,18 @@ export function CampaignPage() {
     [templateDetailQuery.data?.currentVersionDetail?.components],
   );
 
-  useEffect(() => {
-    if (!templateId) return;
+  // Reset the variable inputs whenever the selected template (or its resolved slot
+  // list) changes — adjusted during render, React's recommended pattern for this,
+  // rather than an effect, so it can't trigger an extra cascading render.
+  const variableSlotsKey = `${templateId}:${variableSlots.map((slot) => slot.key).join(',')}`;
+  const [prevVariableSlotsKey, setPrevVariableSlotsKey] = useState(variableSlotsKey);
+  if (templateId && variableSlotsKey !== prevVariableSlotsKey) {
+    setPrevVariableSlotsKey(variableSlotsKey);
     const next: Record<string, string> = {};
     for (const slot of variableSlots) next[slot.key] = '';
     setVariables(next);
     setButtonUrlSuffix('');
-  }, [templateId, variableSlots]);
+  }
 
   const parsed = useMemo(() => parseRecipientPhones(recipientsRaw), [recipientsRaw]);
   const overLimit = parsed.phones.length > MAX_RECIPIENTS;
@@ -195,6 +201,7 @@ export function CampaignPage() {
     setResults(initial);
     setIsSending(true);
     setHistoryId(null);
+    progressRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     const senderPhoneId = parsePhoneNumberId(phoneNumberId);
     let campaignId: string | null = null;
@@ -291,10 +298,7 @@ export function CampaignPage() {
 
   return (
     <ListPageShell>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">
-          One approved template, many recipients.
-        </p>
+      <div className="flex justify-end">
         <Button asChild variant="outline" size="sm">
           <Link to="/campaigns/history">
             <History className="mr-1.5 size-3.5" />
@@ -304,21 +308,21 @@ export function CampaignPage() {
       </div>
 
       <Card className="border-border/70 shadow-none">
-        <CardHeader className="flex flex-row items-start gap-3 space-y-0 border-b border-border/60 p-4 sm:p-5">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <Megaphone className="size-4" />
+        <CardHeader className="flex flex-row items-center gap-2.5 space-y-0 border-b border-border/60 px-4 py-3">
+          <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <Megaphone className="size-3.5" />
           </div>
-          <div className="space-y-1">
-            <CardTitle className="font-display text-base font-semibold tracking-tight">
+          <div>
+            <CardTitle className="font-display text-sm font-semibold tracking-tight">
               New campaign
             </CardTitle>
-            <CardDescription className="text-sm leading-relaxed">
+            <CardDescription className="text-xs leading-snug">
               Shared variables apply to every number. Each recipient is queued separately.
             </CardDescription>
           </div>
         </CardHeader>
-        <CardContent className="grid gap-6 p-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)] lg:gap-8 sm:p-5">
-          <div className="space-y-4">
+        <CardContent className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)] lg:gap-6">
+          <div className="space-y-3">
             <div className="space-y-1.5">
               <Label className="text-xs font-medium text-muted-foreground">Template</Label>
               {templatesQuery.isLoading ? (
@@ -413,7 +417,7 @@ export function CampaignPage() {
                 </span>
               </div>
               <Textarea
-                className="min-h-[160px] resize-y font-mono text-sm"
+                className="min-h-[120px] resize-y font-mono text-sm"
                 placeholder={'919876543210\n918765432109\n…'}
                 value={recipientsRaw}
                 onChange={(event) => setRecipientsRaw(event.target.value)}
@@ -451,11 +455,11 @@ export function CampaignPage() {
             </Button>
           </div>
 
-          <div className="space-y-5 lg:sticky lg:top-4 lg:self-start">
-            <div className="space-y-2">
+          <div className="space-y-4 lg:sticky lg:top-4 lg:self-start">
+            <div className="space-y-1.5">
               <p className="text-sm font-semibold tracking-tight">Message preview</p>
               {!templateId ? (
-                <div className="rounded-xl border border-dashed border-border/80 bg-muted/20 px-4 py-10 text-center text-sm text-muted-foreground">
+                <div className="rounded-xl border border-dashed border-border/80 bg-muted/20 px-4 py-6 text-center text-sm text-muted-foreground">
                   Select a template to preview how the message will look.
                 </div>
               ) : templateDetailQuery.isLoading ? (
@@ -476,13 +480,13 @@ export function CampaignPage() {
                   carouselCards={livePreview.carouselCards}
                 />
               ) : (
-                <div className="rounded-xl border border-dashed border-border/80 bg-muted/20 px-4 py-10 text-center text-sm text-muted-foreground">
+                <div className="rounded-xl border border-dashed border-border/80 bg-muted/20 px-4 py-6 text-center text-sm text-muted-foreground">
                   Preview is not available for this template.
                 </div>
               )}
             </div>
 
-            <div className="space-y-2">
+            <div ref={progressRef} className="scroll-mt-4 space-y-1.5">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-sm font-semibold tracking-tight">Send progress</p>
                 {results.length > 0 ? (
@@ -501,7 +505,7 @@ export function CampaignPage() {
                 ) : null}
               </div>
               {results.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-border/80 bg-muted/20 px-4 py-10 text-center text-sm text-muted-foreground">
+                <div className="rounded-xl border border-dashed border-border/80 bg-muted/20 px-4 py-6 text-center text-sm text-muted-foreground">
                   Results appear here as each recipient is queued.
                 </div>
               ) : (

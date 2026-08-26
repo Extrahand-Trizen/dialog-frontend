@@ -30,6 +30,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { APP_NAME } from '@/constants/branding';
 import { SidebarUserFooter } from '@/components/layout/SidebarUserFooter';
 import { useAuth } from '@/features/auth/context/AuthProvider';
+import { useUnreadConversationsCount } from '@/features/inbox/hooks/useUnreadConversationsCount';
 import { canViewAdminNav } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 
@@ -96,7 +97,15 @@ function isNavItemActive(pathname: string, item: NavItem): boolean {
   return pathname === item.url;
 }
 
-function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
+function NavLink({
+  item,
+  isActive,
+  badgeCount,
+}: {
+  item: NavItem;
+  isActive: boolean;
+  badgeCount?: number;
+}) {
   const { isMobile, setOpenMobile } = useSidebar();
 
   return (
@@ -106,9 +115,9 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
         isActive={isActive}
         tooltip={item.title}
         className={cn(
-          'h-8 rounded-lg px-2.5 text-[13px] font-medium transition-colors',
+          'relative h-8 rounded-lg px-2.5 text-[13px] font-medium transition-colors',
           isActive
-            ? 'bg-sidebar-accent font-semibold text-sidebar-accent-foreground shadow-none'
+            ? 'bg-primary/15 font-semibold text-primary shadow-none hover:bg-primary/20 hover:text-primary'
             : 'text-sidebar-foreground/90 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
         )}
       >
@@ -118,13 +127,24 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
             if (isMobile) setOpenMobile(false);
           }}
         >
+          {isActive ? (
+            <span
+              className="absolute inset-y-1.5 left-0.5 w-[3px] rounded-full bg-primary"
+              aria-hidden
+            />
+          ) : null}
           <item.icon
             className={cn(
               'size-4 shrink-0 stroke-[2px]',
-              isActive ? 'text-sidebar-accent-foreground' : 'text-sidebar-foreground/70',
+              isActive ? 'text-primary' : 'text-sidebar-foreground/70',
             )}
           />
           <span>{item.title}</span>
+          {badgeCount ? (
+            <span className="ml-auto flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+              {badgeCount > 99 ? '99+' : badgeCount}
+            </span>
+          ) : null}
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
@@ -137,6 +157,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const showAdminNav = canViewAdminNav(user);
   const collapsed = state === 'collapsed';
+  const { data: unreadConversationsCount } = useUnreadConversationsCount(!!user);
 
   const visibleSections = navSections
     .filter((section) => !section.adminOnly || showAdminNav)
@@ -200,6 +221,7 @@ export function AppSidebar() {
                       key={item.url}
                       item={item}
                       isActive={isNavItemActive(pathname, item)}
+                      badgeCount={item.url === '/inbox' ? unreadConversationsCount : undefined}
                     />
                   ))}
                 </SidebarMenu>

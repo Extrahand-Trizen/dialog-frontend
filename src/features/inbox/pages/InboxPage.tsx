@@ -20,6 +20,7 @@ export function InboxPage() {
   const canSend = canSendMessages(user);
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState('');
+  const [unreadOnly, setUnreadOnly] = useState(false);
   const debouncedSearch = useDebouncedValue(searchInput);
   const markRead = useMarkConversationRead();
 
@@ -27,17 +28,13 @@ export function InboxPage() {
     page,
     limit: 30,
     search: debouncedSearch || undefined,
+    unreadOnly: unreadOnly || undefined,
   });
   const threadQuery = useConversationThread(conversationId, { page: 1, limit: 50 });
-  const inboundUnlocksFreeText = (threadQuery.data?.items ?? []).some((message) => {
-    if (message.direction !== 'INBOUND') return false;
-    return Date.now() - new Date(message.createdAt).getTime() < 24 * 60 * 60 * 1000;
-  });
   const selectedConversation =
     threadQuery.data?.conversation ??
     listQuery.data?.items.find((item) => item.id === conversationId);
-  const canSendFreeText =
-    inboundUnlocksFreeText || selectedConversation?.canSendFreeText === true;
+  const canSendFreeText = selectedConversation?.canSendFreeText === true;
 
   useEffect(() => {
     if (conversationId) {
@@ -46,9 +43,14 @@ export function InboxPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId]);
 
-  useEffect(() => {
+  // Reset to page 1 when the search term or unread filter changes — adjusted during
+  // render (React's recommended pattern) rather than an effect, avoiding an extra render.
+  const filterKey = `${debouncedSearch}:${unreadOnly}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey);
     setPage(1);
-  }, [debouncedSearch]);
+  }
 
   return (
     <div className="flex h-[calc(100vh-8rem)] min-h-[480px] overflow-hidden rounded-xl border border-border/70 bg-card">
@@ -62,8 +64,10 @@ export function InboxPage() {
           page={page}
           search={searchInput}
           debouncedSearch={debouncedSearch}
+          unreadOnly={unreadOnly}
           onPageChange={setPage}
           onSearchChange={setSearchInput}
+          onUnreadOnlyChange={setUnreadOnly}
           selectedId={conversationId}
           onSelect={(id) => navigate(`/inbox/${id}`)}
         />

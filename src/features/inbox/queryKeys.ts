@@ -4,4 +4,5 @@ export const conversationKeys = {
   list: (params: Record<string, unknown>) => [...conversationKeys.lists(), params] as const,
   thread: (id: string, params: Record<string, unknown>) =>
     [...conversationKeys.all, 'thread', id, params] as const,
+  unreadCount: () => [...conversationKeys.all, 'unread-count'] as const,
 };

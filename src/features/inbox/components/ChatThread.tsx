@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { format, isSameDay, isToday, isYesterday } from 'date-fns';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ExternalLink, Phone } from 'lucide-react';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { QueryErrorPanel } from '@/components/shared/QueryErrorPanel';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -30,6 +30,25 @@ function messageBodyLabel(message: ConversationThreadMessageDto): string {
   }
 }
 
+/** Pulls the header image URL out of a sent template's Meta component payload, if any. */
+function extractHeaderImageUrl(components: unknown): string | null {
+  if (!Array.isArray(components)) return null;
+  for (const raw of components) {
+    if (!raw || typeof raw !== 'object') continue;
+    const component = raw as { type?: unknown; parameters?: unknown };
+    if (String(component.type ?? '').toLowerCase() !== 'header') continue;
+    if (!Array.isArray(component.parameters)) continue;
+    for (const param of component.parameters) {
+      if (!param || typeof param !== 'object') continue;
+      const p = param as { type?: unknown; image?: { link?: unknown } };
+      if (p.type === 'image' && typeof p.image?.link === 'string') {
+        return p.image.link;
+      }
+    }
+  }
+  return null;
+}
+
 function dayLabel(date: Date): string {
   if (isToday(date)) return 'Today';
   if (isYesterday(date)) return 'Yesterday';
@@ -46,6 +65,39 @@ function DateDivider({ date }: { date: Date }) {
   );
 }
 
+function TemplateButtonRow({
+  button,
+  isOutbound,
+}: {
+  button: ConversationThreadMessageDto['buttons'][number];
+  isOutbound: boolean;
+}) {
+  const rowClass = cn(
+    'flex w-full items-center justify-center gap-1.5 border-t px-3 py-2 text-[13px] font-medium',
+    isOutbound
+      ? 'border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10'
+      : 'border-border text-primary hover:bg-muted/60',
+  );
+
+  if (button.url) {
+    return (
+      <a href={button.url} target="_blank" rel="noreferrer" className={rowClass}>
+        <ExternalLink className="size-3.5" />
+        {button.label}
+      </a>
+    );
+  }
+  if (button.phoneNumber) {
+    return (
+      <a href={`tel:${button.phoneNumber}`} className={rowClass}>
+        <Phone className="size-3.5" />
+        {button.label}
+      </a>
+    );
+  }
+  return <div className={cn(rowClass, 'cursor-default opacity-70 hover:bg-transparent')}>{button.label}</div>;
+}
+
 function MessageBubble({
   message,
   grouped,
@@ -56,17 +108,27 @@ function MessageBubble({
   const isOutbound = message.direction === 'OUTBOUND';
 
   const isFailed = message.status === 'FAILED';
+  const headerImageUrl = message.type === 'TEMPLATE' ? extractHeaderImageUrl(message.components) : null;
 
   return (
     <div className={cn('flex w-full', isOutbound ? 'justify-end' : 'justify-start', grouped ? 'mt-0.5' : 'mt-2.5')}>
       <div
         className={cn(
-          'relative max-w-[75%] rounded-lg px-3.5 py-2.5 shadow-sm',
+          'relative max-w-[75%] overflow-hidden rounded-lg shadow-sm',
           isOutbound
             ? 'bg-primary text-primary-foreground rounded-tr-sm'
             : 'bg-card text-card-foreground rounded-tl-sm ring-1 ring-border',
         )}
       >
+        {headerImageUrl ? (
+          <img
+            src={headerImageUrl}
+            alt=""
+            className="max-h-64 w-full object-cover"
+            loading="lazy"
+          />
+        ) : null}
+        <div className="px-3.5 py-2.5">
         <p className="whitespace-pre-wrap break-words font-chat text-[14.5px] leading-[1.45]">
           {messageBodyLabel(message)}
         </p>
@@ -90,6 +152,10 @@ function MessageBubble({
             <span className="leading-snug">{message.errorMessage}</span>
           </div>
         ) : null}
+        </div>
+        {message.buttons.map((button, index) => (
+          <TemplateButtonRow key={`${button.label}-${index}`} button={button} isOutbound={isOutbound} />
+        ))}
       </div>
     </div>
   );

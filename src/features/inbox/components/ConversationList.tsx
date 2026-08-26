@@ -6,13 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useConversations } from '@/features/inbox/hooks/useConversations';
 import { ConversationListItem } from '@/features/inbox/components/ConversationListItem';
+import { cn } from '@/lib/utils';
 
 type ConversationListProps = {
   page: number;
   search: string;
   debouncedSearch: string;
+  unreadOnly: boolean;
   onPageChange: (page: number) => void;
   onSearchChange: (value: string) => void;
+  onUnreadOnlyChange: (value: boolean) => void;
   selectedId: string | undefined;
   onSelect: (conversationId: string) => void;
 };
@@ -23,8 +26,10 @@ export function ConversationList({
   page,
   search,
   debouncedSearch,
+  unreadOnly,
   onPageChange,
   onSearchChange,
+  onUnreadOnlyChange,
   selectedId,
   onSelect,
 }: ConversationListProps) {
@@ -32,6 +37,7 @@ export function ConversationList({
     page,
     limit: CONVERSATIONS_PAGE_SIZE,
     search: debouncedSearch || undefined,
+    unreadOnly: unreadOnly || undefined,
   });
 
   const isSearchPending = search !== debouncedSearch;
@@ -39,7 +45,7 @@ export function ConversationList({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b p-2">
+      <div className="space-y-2 border-b p-2">
         <div className="relative">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -49,6 +55,18 @@ export function ConversationList({
             className="h-9 pl-8"
           />
         </div>
+        <button
+          type="button"
+          onClick={() => onUnreadOnlyChange(!unreadOnly)}
+          className={cn(
+            'rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
+            unreadOnly
+              ? 'border-primary bg-primary/10 text-primary'
+              : 'border-border text-muted-foreground hover:bg-muted/60',
+          )}
+        >
+          Unread only
+        </button>
       </div>
 
       {showLoading ? (
@@ -64,11 +82,19 @@ export function ConversationList({
       ) : (query.data?.items.length ?? 0) === 0 ? (
         <div className="p-4">
           <EmptyState
-            title={debouncedSearch ? 'No matching conversations' : 'No conversations yet'}
+            title={
+              debouncedSearch
+                ? 'No matching conversations'
+                : unreadOnly
+                  ? 'No unread conversations'
+                  : 'No conversations yet'
+            }
             description={
               debouncedSearch
                 ? `No contacts match "${debouncedSearch}".`
-                : 'Messages you send from Inbox or Messages, and customer replies, show up here.'
+                : unreadOnly
+                  ? 'You\'re all caught up.'
+                  : 'Messages you send from Inbox or Messages, and customer replies, show up here.'
             }
           />
         </div>

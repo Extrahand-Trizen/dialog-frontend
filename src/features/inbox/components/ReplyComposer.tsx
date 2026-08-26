@@ -15,6 +15,7 @@ import {
   templateHasDynamicUrlButton,
 } from '@/features/messages/schemas/sendMessageSchema';
 import { useSendReply } from '@/features/inbox/hooks/useSendReply';
+import { readDraft, writeDraft } from '@/features/inbox/draftStorage';
 
 const APPROVED_LIST_PARAMS = { page: 1, limit: 100, metaStatus: 'APPROVED' as const };
 
@@ -146,7 +147,21 @@ function TextReplyForm({
   disabled?: boolean;
 }) {
   const sendMutation = useSendReply(conversationId);
-  const [body, setBody] = useState('');
+  const [body, setBody] = useState(() => readDraft(conversationId));
+
+  // Switching conversations doesn't remount this component, so reload the draft for
+  // the newly selected conversation here — adjusted during render (React's recommended
+  // pattern for this) rather than an effect, avoiding an extra render pass.
+  const [draftConversationId, setDraftConversationId] = useState(conversationId);
+  if (conversationId !== draftConversationId) {
+    setDraftConversationId(conversationId);
+    setBody(readDraft(conversationId));
+  }
+
+  const updateBody = (value: string) => {
+    setBody(value);
+    writeDraft(conversationId, value);
+  };
 
   const onSubmit = async () => {
     const trimmed = body.trim();
@@ -158,13 +173,14 @@ function TextReplyForm({
       idempotencyKey: `inbox-${crypto.randomUUID()}`,
     });
     setBody('');
+    writeDraft(conversationId, '');
   };
 
   return (
     <div className="flex items-end gap-2">
       <Textarea
         value={body}
-        onChange={(e) => setBody(e.target.value)}
+        onChange={(e) => updateBody(e.target.value)}
         placeholder={disabled ? 'Waiting for a WhatsApp reply from this number…' : 'Type a message…'}
         className="min-h-10 flex-1 resize-none font-chat text-[14.5px]"
         rows={1}

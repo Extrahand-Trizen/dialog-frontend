@@ -1,4 +1,4 @@
-import { getPaginated, post } from '@/lib/api-client';
+import { get, getPaginated, post } from '@/lib/api-client';
 import { toApiQueryParams } from '@/lib/query-params';
 import type {
   ConversationSummaryDto,
@@ -30,6 +30,10 @@ export async function getConversationThread(
 
 export async function markConversationRead(conversationId: string): Promise<null> {
   return post<null>(`/conversations/${conversationId}/read`);
+}
+
+export async function getUnreadConversationsCount(): Promise<{ unreadCount: number }> {
+  return get<{ unreadCount: number }>('/conversations/unread-count');
 }
 
 export async function sendConversationReply(
