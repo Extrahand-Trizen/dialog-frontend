@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ShieldCheck } from 'lucide-react';
 import { AuthPageShell } from '@/components/shared/AuthPageShell';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,7 +16,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/features/auth/context/AuthProvider';
 import { loginFormSchema, type LoginFormValues } from '@/features/auth/schemas';
-import { APP_NAME, APP_TAGLINE } from '@/constants/branding';
 import { getApiErrorMessage } from '@/lib/api-error';
 
 export function LoginPage() {
@@ -52,22 +51,28 @@ export function LoginPage() {
 
   return (
     <AuthPageShell
-      title={`Sign in to ${APP_NAME}`}
-      description={APP_TAGLINE}
+      title="Welcome back"
+      description="Sign in to your operations console."
       footer={
-        <p className="text-xs tracking-wide text-muted-foreground">
-          <Link to="/" className="transition hover:text-foreground">
-            Home
-          </Link>
-          <span className="mx-2 text-border">·</span>
-          <Link to="/privacy" className="transition hover:text-foreground">
-            Privacy
-          </Link>
-          <span className="mx-2 text-border">·</span>
-          <Link to="/terms" className="transition hover:text-foreground">
-            Terms
-          </Link>
-        </p>
+        <div className="space-y-3">
+          <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+            <ShieldCheck className="size-3.5 text-emerald-600" />
+            <span>Secure access for authorized team members</span>
+          </div>
+          <p className="text-xs tracking-wide text-muted-foreground">
+            <Link to="/" className="transition hover:text-foreground">
+              Home
+            </Link>
+            <span className="mx-2 text-border">·</span>
+            <Link to="/privacy" className="transition hover:text-foreground">
+              Privacy
+            </Link>
+            <span className="mx-2 text-border">·</span>
+            <Link to="/terms" className="transition hover:text-foreground">
+              Terms
+            </Link>
+          </p>
+        </div>
       }
     >
       <Form {...form}>

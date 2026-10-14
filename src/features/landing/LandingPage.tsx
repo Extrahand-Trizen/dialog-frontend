@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, MessageSquare } from 'lucide-react';
+import { ArrowRight, Mail, MessageSquare, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   APP_HERO_HEADLINE,
@@ -18,6 +18,33 @@ export function LandingPage() {
   return (
     <div className="landing min-h-screen bg-background">
       <header className="sticky top-0 z-30 border-b border-border/70 bg-background/80 backdrop-blur-md">
+        {/* Top Contact Bar */}
+        <div className="border-b border-border/60 bg-muted/50 py-2.5 text-sm text-muted-foreground">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-8 gap-y-2 px-4 sm:justify-start sm:px-6">
+            <div className="flex items-center gap-3">
+              <span className="font-semibold text-foreground">Talk To Sales:</span>
+              <a
+                href="tel:8639648822"
+                className="inline-flex items-center gap-2 font-medium text-foreground/80 transition hover:text-primary hover:underline underline-offset-4"
+              >
+                <Phone className="size-3.5 text-primary" />
+                <span>+91 8639648822</span>
+              </a>
+            </div>
+            <span className="hidden text-border/80 sm:inline">|</span>
+            <div className="flex items-center">
+              <a
+                href="mailto:contact@trizenventures.com"
+                className="inline-flex items-center gap-2 font-medium text-foreground/80 transition hover:text-primary hover:underline underline-offset-4"
+              >
+                <Mail className="size-3.5 text-primary" />
+                <span>contact@trizenventures.com</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Navbar */}
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link to="/" className="flex items-center gap-2.5 text-foreground">
             <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
