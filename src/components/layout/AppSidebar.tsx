@@ -20,7 +20,6 @@ import {
   Inbox,
   Key,
   Megaphone,
-  MessageSquare,
   MessagesSquare,
   Phone,
   PhoneCall,
@@ -185,9 +184,11 @@ export function AppSidebar() {
                 className="h-9 rounded-lg px-1.5 hover:bg-transparent active:bg-transparent data-[state=open]:hover:bg-transparent"
               >
                 <Link to="/overview" className="flex items-center gap-2">
-                  <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                    <MessageSquare className="size-3.5" strokeWidth={2.25} />
-                  </div>
+                  <img
+                    src="/extrahand-logo.png"
+                    alt=""
+                    className="size-7 shrink-0 object-contain"
+                  />
                   <span className="truncate font-display text-sm font-semibold tracking-tight text-sidebar-foreground">
                     {APP_NAME}
                   </span>

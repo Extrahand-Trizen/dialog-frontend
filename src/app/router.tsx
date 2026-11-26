@@ -176,7 +176,6 @@ function AuthenticatedLayout() {
 
 const routes = [
   { path: '/', element: withSuspense(<LandingPage />) },
-  { path: '/pricing', element: withSuspense(<LandingPage />) },
   { path: '/login', element: withSuspense(<LoginPage />) },
   { path: '/privacy', element: withSuspense(<PrivacyPage />) },
   { path: '/terms', element: withSuspense(<TermsPage />) },

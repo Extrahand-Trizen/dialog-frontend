@@ -13,8 +13,8 @@
     --card-foreground: 160 30% 8%;
     --popover: 0 0% 100%;
     --popover-foreground: 160 30% 8%;
-    --primary: 152 69% 31%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 42 91% 57%;
+    --primary-foreground: 222 47% 11%;
     --secondary: 150 12% 94%;
     --secondary-foreground: 160 25% 14%;
     --muted: 150 12% 94%;
@@ -25,16 +25,16 @@
     --destructive-foreground: 0 0% 98%;
     --border: 150 10% 88%;
     --input: 150 10% 88%;
-    --ring: 152 69% 31%;
+    --ring: 42 91% 57%;
     --radius: 0.875rem;
     --sidebar-background: 150 16% 97%;
     --sidebar-foreground: 160 25% 14%;
-    --sidebar-primary: 152 69% 31%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary: 42 91% 57%;
+    --sidebar-primary-foreground: 222 47% 11%;
     --sidebar-accent: 150 12% 92%;
     --sidebar-accent-foreground: 160 30% 10%;
     --sidebar-border: 150 10% 88%;
-    --sidebar-ring: 152 69% 31%;
+    --sidebar-ring: 42 91% 57%;
   }
 
   .dark {
@@ -44,8 +44,8 @@
     --card-foreground: 150 20% 97%;
     --popover: 160 24% 9%;
     --popover-foreground: 150 20% 97%;
-    --primary: 152 58% 42%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 42 91% 57%;
+    --primary-foreground: 222 47% 11%;
     --secondary: 160 16% 16%;
     --secondary-foreground: 150 20% 97%;
     --muted: 160 16% 16%;
@@ -56,15 +56,15 @@
     --destructive-foreground: 150 20% 97%;
     --border: 160 14% 18%;
     --input: 160 14% 18%;
-    --ring: 152 58% 42%;
+    --ring: 42 91% 57%;
     --sidebar-background: 160 26% 7%;
     --sidebar-foreground: 150 20% 97%;
-    --sidebar-primary: 152 55% 45%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary: 42 91% 57%;
+    --sidebar-primary-foreground: 222 47% 11%;
     --sidebar-accent: 160 14% 14%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 160 12% 16%;
-    --sidebar-ring: 152 55% 45%;
+    --sidebar-ring: 42 91% 57%;
   }
 
   * {
@@ -78,6 +78,20 @@
   body {
     @apply bg-background font-sans text-[15px] leading-relaxed text-foreground antialiased;
     font-feature-settings: 'ss01' on, 'cv11' on;
+  }
+
+  body:has(.landing),
+  body:has(.auth-shell),
+  .landing,
+  .auth-shell {
+    scrollbar-width: none;
+  }
+
+  body:has(.landing)::-webkit-scrollbar,
+  body:has(.auth-shell)::-webkit-scrollbar,
+  .landing::-webkit-scrollbar,
+  .auth-shell::-webkit-scrollbar {
+    display: none;
   }
 
   h1,

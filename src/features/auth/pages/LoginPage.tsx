@@ -53,6 +53,7 @@ export function LoginPage() {
     <AuthPageShell
       title="Welcome back"
       description="Sign in to your operations console."
+      lightBackground
       footer={
         <div className="space-y-3">
           <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
@@ -122,7 +123,7 @@ export function LoginPage() {
           ) : null}
           <Button
             type="submit"
-            className="h-11 w-full rounded-xl text-[0.9375rem] font-medium"
+            className="h-11 w-full rounded-xl bg-[#f5b82e] text-[0.9375rem] font-semibold text-slate-900 hover:bg-[#e5a820]"
             disabled={form.formState.isSubmitting}
           >
             {form.formState.isSubmitting ? (

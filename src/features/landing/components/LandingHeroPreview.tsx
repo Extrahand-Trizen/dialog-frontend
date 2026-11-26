@@ -10,9 +10,11 @@ export function LandingHeroPreview() {
       />
       <div className="relative overflow-hidden rounded-2xl border bg-card shadow-lg">
         <div className="flex items-center gap-3 border-b bg-muted/50 px-4 py-3">
-          <div className="flex size-9 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-            EH
-          </div>
+          <img
+            src="/extrahand-logo.png"
+            alt=""
+            className="size-9 object-contain"
+          />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">ExtraHand</p>
             <p className="text-xs text-muted-foreground">Business account</p>
